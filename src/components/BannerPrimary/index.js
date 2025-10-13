@@ -9,24 +9,32 @@ function Highlights() {
     <TypeAnimation
       sequence={[
        
-        'Encontre O Imóvel Dos Seus Sonhos',
-        1000, 
-        'Encontre A Casa Dos Seus Sonhos',
-        1000,
-        'Encontre O Apartamento Dos Seus Sonhos',
-        1000,
-        'Encontre A Sala Comercial Dos Seus Sonhos',
-        1000
+     'Bem-vindo ao Seu Sistema de Vendas!',
+1000,
+'Mais agilidade e controle para o seu negócio!',
+1000,
+'Tudo pronto para um dia de grandes vendas!',
+1000,
+'Conte com a gente para impulsionar seu mercado!',
+1000,
+'Gestão fácil, vendas rápidas, resultados reais!',
+1000,
+'Simplifique sua rotina com tecnologia inteligente!',
+1000,
+'Transformando o seu ponto de venda em sucesso!',
+1000,
+'Estamos prontos para crescer junto com você!',
+1000
       ]}
       wrapper="h1"
       speed={50}
-      style={{ fontSize: '40px', display: 'inline-block' }}
+      style={{ fontSize: '40px', display: 'inline-block' , color: 'white'}}
       repeat={Infinity}
     />
 
       <p> 
-      Vamos abrir as portas para o futuro?</p> 
-      <button>Entre em contato</button>
+      Vamos manejar seu varejo?</p> 
+      <button>Comece já</button>
 
 
 

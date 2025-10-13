@@ -14,6 +14,16 @@
   scroll-behavior: smooth;
 }
 
+input,
+select,
+textarea {
+  padding: 5px;
+  color: rgb(150, 150, 150);
+  border: 0;
+  border-bottom: 2px solid rgb(200, 200, 200);
+  outline: 0;
+}
+
 span {
   color: #ffffff;
 }
@@ -24,8 +34,8 @@ a {
 
 h1 {
   color: var(--color-title);
-  font-size: 40px;
-  font-weight: regular;
+  font-size: clamp(30px, 5vw, 40px); 
+  font-weight: normal;
 }
 
 h2 {
@@ -41,7 +51,23 @@ h3 {
 
 p {
   color: var(--color-paragraph);
-  font-size: 15px;
+  font-size: clamp(12px, 2vw, 15px);
+}
+
+button {
+  border-style: none;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  transition: 1s;
+  cursor: pointer;
+}
+
+button:hover {
+  transition: 1s;
+  cursor: pointer;
+
 }
 
 .container {

@@ -1,28 +1,45 @@
-import React from "react";
-import { Link } from "react-router-dom"; // Importa o Link
-import Logo from "../../assets/logo.png";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import Logo from "../../assets/logo-transparente.png";
 import "./styles.css";
 
 export default function NavBar() {
-  return (
-    <header className="navbar">
-      <Link to="/"> {/* Substitui a tag <a> pelo componente <Link> */}
-        <img src={Logo} className="logo-img" alt="Logo" />
-      </Link>
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-      <div className="links">
-        <Link to="/" className="link">
-          Produtos
+  const toggleMobileMenu = () => {
+    setIsMobileOpen(!isMobileOpen);
+  };
+
+  return (
+    <>
+      {/* Botão hamburger para mobile */}
+      <button 
+        className="menu-toggle" 
+        onClick={toggleMobileMenu}
+        style={{ display: window.innerWidth <= 768 ? 'block' : 'none' }}
+      >
+        ☰
+      </button>
+
+      <header className={`navbar ${isMobileOpen ? 'mobile-open' : ''}`}>
+        <Link to="/" onClick={() => setIsMobileOpen(false)}>
+          <img src={Logo} className="logo-img" alt="Logo" />
         </Link>
-        
-        <Link to="/vendas" className="link">
-          Venda
-        </Link>
-        
-        <Link to="/gestao" className="link">
-          Gestão
-        </Link>
-      </div>
-    </header>
+
+        <div className="links">
+          <Link to="/produtos" onClick={() => setIsMobileOpen(false)}>
+            Produtos
+          </Link>
+ 
+          <Link to="/usuarios" onClick={() => setIsMobileOpen(false)}>
+            Usuários
+          </Link>
+
+          <Link to="/vender" onClick={() => setIsMobileOpen(false)}>
+            Vender
+          </Link>
+        </div>
+      </header>
+    </>
   );
 }

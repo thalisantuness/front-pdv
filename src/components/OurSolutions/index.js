@@ -13,7 +13,7 @@ function OurSolutions() {
         <div className="second-section">   
          
           <div className="left-section">
-            <h1>Confira</h1> 
+            <h1>Aqui você pode!</h1> 
             <p>Oferecemos uma ampla e diversificada variedade de apartamentos, casas e salas comerciais disponíveis para venda e aluguel em Recife e toda a região.</p>
             <img src={Couple} />
            </div>
@@ -28,14 +28,14 @@ function OurSolutions() {
             </div>    
 
             <div className="right-section-values">
-            <img  src={Regua} alt="Check Icon" />
+            <img  src={Xadrez} alt="Check Icon" />
             <h2>Casas</h2>
             </div>      
 
             
             <div className="right-section-values">
-            <img src={Xadrez} alt="Check Icon" />
-            <h2> Salas Comerciais </h2>
+            <img src={Regua} alt="Check Icon" />
+            <h2> Imóveis Comerciais </h2>
             </div>   
 
              
