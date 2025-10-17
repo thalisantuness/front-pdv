@@ -1,6 +1,6 @@
 // pages/referrals/index.js
 import React, { useState } from "react";
-import NavBar from "../../components/NavBar/index";
+import SideBar from "../../components/SideBar/index";
 import Footer from "../../components/Footer/index";
 import { FaUserPlus, FaGift, FaPhone, FaEnvelope, FaCheckCircle, FaClock } from "react-icons/fa";
 import "./styles.css";
@@ -117,7 +117,7 @@ function ReferralsPage() {
 
   return (
     <div className="container">
-      <NavBar />
+      <SideBar />
       <div className="main-content">
         <div className="referrals-container">
           <div className="referrals-header">

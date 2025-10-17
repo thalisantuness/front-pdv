@@ -7,11 +7,11 @@ import "./global.css";
 import Home from "./pages/home";
 import ImovelListPage from "./pages/imovel-list";
 import ImovelListDetails from "./pages/imovel-details";
-import RegisterImovel from "./pages/register-imovel-admin";
+import RegisterProduct from "./pages/register-product-admin";
 import UserListAdmin from "./pages/user-list-admin"; // Adicionei o import para o componente de usuários
 import LoginAdmin from "./pages/login-admin";
 import ProtectRoute from "./components/ProtectRoute"; // Corrigi para usar apenas um nome (ProtectedRoute -> ProtectRoute)
-import EditImovel from "./pages/edit-imovel-admin";
+import EditImovel from "./pages/edit-product-admin";
 import OrdersPage from "./pages/orders"; 
 import AppointmentsPage from "./pages/appointments";
 import ReferralsPage from "./pages/referrals";
@@ -42,6 +42,13 @@ function App() {
                 <ImovelListDetails />
               </ProtectRoute>
             } />
+
+     <Route path="/add-product/" element={
+              <ProtectRoute>
+                < RegisterProduct />
+              </ProtectRoute>
+            } />
+           
             
             <Route path="/pedidos" element={
               <ProtectRoute>

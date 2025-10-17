@@ -1,5 +1,5 @@
 import React from "react";
-import NavBar from "../../components/NavBar/index";
+import SideBar from "../../components/SideBar/index";
 import BannerPrimary from "../../components/BannerPrimary/index";
 import OurSolutions from "../../components/OurSolutions/index";
 import Footer from "../../components/Footer/index";
@@ -12,7 +12,7 @@ import "../../global.css";
 function Home() {
   return (
     <div className="container">
-      <NavBar />
+      <SideBar />
       <div className="main-content">
         <BannerPrimary />
       {/*   <OurSolutions />

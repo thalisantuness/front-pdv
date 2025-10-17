@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import Logo from "../../assets/logo-transparente.png";
 import "./styles.css";
 
-export default function NavBar() {
+export default function SideBar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 

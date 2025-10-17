@@ -4,7 +4,7 @@ import axios from "axios";
 import "./styles.css";
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
-import NavBar from "../../components/NavBar/index";
+import SideBar from "../../components/SideBar/index";
 import { useImovel } from "../../context/ImovelContext";
 
 function UserListAdmin() {
@@ -369,7 +369,7 @@ function UserListAdmin() {
   if (contextLoading) {
     return (
       <div className="container">
-        <NavBar />
+        <SideBar />
         <div className="main-content">
           <div className="loading-container">
             <div className="loading-spinner"></div>
@@ -384,7 +384,7 @@ function UserListAdmin() {
   if (!isAuthenticated()) {
     return (
       <div className="container">
-        <NavBar />
+        <SideBar />
         <div className="main-content">
           <div className="loading-container">
             <div className="loading-spinner"></div>
@@ -398,7 +398,7 @@ function UserListAdmin() {
   if (loading) {
     return (
       <div className="container">
-        <NavBar />
+        <SideBar />
         <div className="main-content">
           <div className="loading-container">
             <div className="loading-spinner"></div>
@@ -411,7 +411,7 @@ function UserListAdmin() {
 
   return (
     <div className="container">
-      <NavBar />
+      <SideBar />
       <div className="main-content">
         <div className="user-admin-container">
           <ToastContainer />

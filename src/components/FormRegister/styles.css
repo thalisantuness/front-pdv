@@ -1,5 +1,5 @@
-/* Estilos gerais */
-.property-form-container {
+/* Estilos gerais para formulário de produtos */
+.product-form-container {
   max-width: 1000px;
   margin: 2rem auto;
   padding: 2rem;
@@ -8,12 +8,39 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
-.property-form-container h2 {
+/* Header do formulário */
+.form-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #718096;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  background-color: #4a5568;
+}
+
+.form-header h2 {
   color: #2d3748;
   font-size: 1.75rem;
   font-weight: 600;
-  text-align: center;
-  margin-bottom: 2rem;
+  margin: 0;
 }
 
 /* Seções do formulário */
@@ -68,11 +95,6 @@
   outline: none;
   border-color: #3182ce;
   box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
-}
-
-.form-group textarea {
-  min-height: 100px;
-  resize: vertical;
 }
 
 /* Upload de arquivos */
@@ -172,39 +194,22 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Seção de fotos */
-.photos-section {
+/* Seção de fotos secundárias */
+.secondary-photos-section {
   margin-top: 3rem;
   padding-top: 2rem;
+  border-top: 1px solid #e2e8f0;
 }
 
-.success-message {
-  text-align: center;
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background-color: #f0fff4;
-  border-radius: 8px;
-  border-left: 4px solid #38a169;
-}
-
-.success-message h3 {
-  color: #2d3748;
-  font-size: 1.25rem;
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.success-message p {
-  color: #4a5568;
-}
-
-.photos-section h3 {
+.section-header h3 {
   color: #2d3748;
   font-size: 1.25rem;
   font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.section-header p {
+  color: #718096;
   margin-bottom: 1.5rem;
 }
 
@@ -264,12 +269,7 @@
   cursor: not-allowed;
 }
 
-.delete-photo.disabled {
-  background-color: #718096;
-  cursor: not-allowed;
-}
-
-/* Formulário de adicionar foto */
+/* Formulário de adicionar foto secundária */
 .add-photo-container {
   background-color: #f8fafc;
   padding: 1.5rem;
@@ -316,8 +316,14 @@
 
 /* Responsividade */
 @media (max-width: 768px) {
-  .property-form-container {
+  .product-form-container {
     padding: 1.5rem;
+  }
+  
+  .form-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
   }
   
   .form-grid {
@@ -330,11 +336,11 @@
 }
 
 @media (max-width: 480px) {
-  .property-form-container {
+  .product-form-container {
     padding: 1rem;
   }
   
-  .property-form-container h2 {
+  .form-header h2 {
     font-size: 1.5rem;
   }
   

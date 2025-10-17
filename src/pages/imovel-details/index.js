@@ -4,7 +4,7 @@ import axios from "axios";
 import { useImovel } from "../../context/ImovelContext";
 import "./styles.css";
 import { ToastContainer, toast } from 'react-toastify';
-import NavBar from "../../components/NavBar/index";
+import SideBar from "../../components/SideBar/index";
 
 function PDVVendas() {
   const [imoveis, setImoveis] = useState([]);
@@ -105,7 +105,7 @@ function PDVVendas() {
 
   return (
     <div className="container">
-      <NavBar />
+      <SideBar />
       <div className="main-content">
         <div className="pdv-vendas-container">
           <ToastContainer />

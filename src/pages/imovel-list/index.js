@@ -1,25 +1,16 @@
-import React from "react";
-import NavBar from "../../components/NavBar/index";
+import SideBar from "../../components/SideBar/index";
 import Footer from "../../components/Footer/index";
-import ImovelList from "../../components/ImovelList";
-import ImovelFilter from "../../components/ImovelFilter";
-import ReactWhatsappButton from "react-whatsapp-button";
+import ImovelList from "../../components/ProductList";
 import "./style.css";
 import "../../global.css";
 
 function ImovelListPage() {
   return (
     <div className="container">
-      <NavBar />
+      <SideBar />
       <div className="main-content">
-        <ReactWhatsappButton countryCode="81" phoneNumber="92200646" />
-        
-        <h1>Produtos</h1>
-
-        <ImovelFilter />
         <ImovelList />
 
-        {/* <Blog /> */}
         <Footer />
       </div>
     </div>

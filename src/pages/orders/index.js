@@ -1,6 +1,6 @@
 // pages/orders/index.js
 import React, { useState } from "react";
-import NavBar from "../../components/NavBar/index";
+import SideBar from "../../components/SideBar/index";
 import Footer from "../../components/Footer/index";
 import "./styles.css";
 
@@ -108,7 +108,7 @@ function OrdersPage() {
 
   return (
     <div className="container">
-      <NavBar />
+      <SideBar />
       <div className="main-content">
         <div className="orders-container">
           <div className="orders-header">
