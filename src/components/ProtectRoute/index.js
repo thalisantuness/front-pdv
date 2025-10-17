@@ -1,10 +1,21 @@
+// components/ProtectedRoute/index.js
 import React from "react";
 import { Navigate } from "react-router-dom";
+import { useImovel } from "../../context/ImovelContext";
 
-const ProtectRoute = ({ element }) => {
-  const token = localStorage.getItem("token"); 
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useImovel();
 
-  return token ? element : <Navigate to="/login-admin" />; 
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Carregando...</p>
+      </div>
+    );
+  }
+
+  return isAuthenticated() ? children : <Navigate to="/" replace />;
 };
 
-export default ProtectRoute;
+export default ProtectedRoute;

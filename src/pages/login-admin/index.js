@@ -1,18 +1,11 @@
 import React from "react";
-import NavBar from "../../components/NavBar/index";
 import FormLogin from "../../components/FormLogin/index";
-import Footer from "../../components/Footer/index";
-
-
-import "../../global.css";
-
+import "./styles.css"; // Importar o CSS específico da página
 
 function LoginAdmin() {
   return (
-    <div className="container">
-     
+    <div className="login-admin-container">
       <FormLogin />
-      <Footer /> 
     </div>
   );
 }

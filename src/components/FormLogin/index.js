@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import "./styles.css";
 import { ToastContainer, toast } from 'react-toastify';
+import { useImovel } from "../../context/ImovelContext";
 
 export default function FormLogin() {
   const [formData, setFormData] = useState({
@@ -9,6 +10,7 @@ export default function FormLogin() {
     senha: "",
   });
   const [loading, setLoading] = useState(false);
+  const { login } = useImovel();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,42 +22,48 @@ export default function FormLogin() {
     setLoading(true);
     try {
       const response = await axios.post(
-        "https://api-corretora-production.up.railway.app/usuarios/login",
+        "https://back-pdv-production.up.railway.app/login",
         formData,
         { headers: { "Content-Type": "application/json" } }
       ); 
       
-      const token = response.data.token;
-      if (token) {
-          toast.success("Login realizado com sucesso!", {
-                position: "top-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "colored",
-              });
-        localStorage.setItem("token", token); 
-        window.location.href = "/home"; 
+      const { usuario: usuarioData, token: tokenData } = response.data;
+      
+      if (tokenData && usuarioData) {
+        toast.success("Login realizado com sucesso!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
+        
+        // Usar a função login do contexto
+        login(usuarioData, tokenData);
+        
+        // Redirecionar após um breve delay para mostrar o toast
+        setTimeout(() => {
+          window.location.href = "/home";
+        }, 1000);
       }
     } catch (error) {
       console.error("Erro ao fazer login:", error);
         
-      
       const errorMessage = error.response?.data?.message || "Erro desconhecido ao logar!";
 
       toast.error(`Erro ao logar: ${errorMessage}`, {
-              position: "top-right",
-              autoClose: 3000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "colored",
-            });
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
     }
     setLoading(false);
   };

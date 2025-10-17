@@ -8,10 +8,13 @@ import Home from "./pages/home";
 import ImovelListPage from "./pages/imovel-list";
 import ImovelListDetails from "./pages/imovel-details";
 import RegisterImovel from "./pages/register-imovel-admin";
-import ImovelListAdminPage from "./pages/imovel-list-admin";
+import UserListAdmin from "./pages/user-list-admin"; // Adicionei o import para o componente de usuários
 import LoginAdmin from "./pages/login-admin";
-import ProtectRoute from "./components/ProtectRoute";
+import ProtectRoute from "./components/ProtectRoute"; // Corrigi para usar apenas um nome (ProtectedRoute -> ProtectRoute)
 import EditImovel from "./pages/edit-imovel-admin";
+import OrdersPage from "./pages/orders"; 
+import AppointmentsPage from "./pages/appointments";
+import ReferralsPage from "./pages/referrals";
 
 function App() {
   return (
@@ -19,21 +22,61 @@ function App() {
       <Router>
         <div className="container">
           <Routes>
-         
-            <Route path="/login" element={<LoginAdmin />} />
-               <Route path="/home" element={<Home />} />
-            <Route path="/produtos" element={<ImovelListPage />} />
-            <Route path="/vender/" element={<ImovelListDetails />} />
-          
+            <Route path="/" element={<LoginAdmin />} />
+            
+            {/* Rotas protegidas */}
+            <Route path="/home" element={
+              <ProtectRoute>
+                <Home />
+              </ProtectRoute>
+            } />
+            
+            <Route path="/produtos" element={
+              <ProtectRoute>
+                <ImovelListPage />
+              </ProtectRoute>
+            } />
+            
+            <Route path="/vender/" element={
+              <ProtectRoute>
+                <ImovelListDetails />
+              </ProtectRoute>
+            } />
+            
+            <Route path="/pedidos" element={
+              <ProtectRoute>
+                <OrdersPage />
+              </ProtectRoute>
+            } /> 
+            
+            <Route path="/agendamentos" element={
+              <ProtectRoute>
+                <AppointmentsPage />
+              </ProtectRoute>
+            } />
+            
+            <Route path="/indicacoes" element={
+              <ProtectRoute>
+                <ReferralsPage />
+              </ProtectRoute>
+            } />
+
             <Route
               path="/editar-produto/:id"
-              element={<ProtectRoute element={<EditImovel />} />}
+              element={
+                <ProtectRoute>
+                  <EditImovel />
+                </ProtectRoute>
+              }
             />
-
-          
+            
             <Route
               path="/usuarios"
-              element={<ProtectRoute element={<ImovelListAdminPage />} />}
+              element={
+                <ProtectRoute>
+                  <UserListAdmin />
+                </ProtectRoute>
+              }
             />
           </Routes>
         </div>

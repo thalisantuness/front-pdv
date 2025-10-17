@@ -1,10 +1,11 @@
-/* styles.css */
+/* components/FormLogin/styles.css */
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  background-color: #f5f7fa;
+  width: 100%;
+  /* Removido min-height: 100vh para evitar conflitos com o container pai */
+  background-color: transparent; /* Removido background para permitir que o gradiente do pai apareça */
   padding: 20px;
 }
 
