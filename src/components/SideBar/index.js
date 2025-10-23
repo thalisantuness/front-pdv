@@ -58,6 +58,10 @@ export default function SideBar() {
             Agendamentos
           </Link>
 
+          <Link to="/servicos-prestados" onClick={closeMobileMenu}>
+            Serviços Prestados
+          </Link>
+
           <Link to="/indicacoes" onClick={closeMobileMenu}>
             Indicações
           </Link>

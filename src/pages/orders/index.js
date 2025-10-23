@@ -1,69 +1,67 @@
 // pages/orders/index.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import SideBar from "../../components/SideBar/index";
 import Footer from "../../components/Footer/index";
+import { toast, ToastContainer } from "react-toastify";
+import axios from "axios";
+import { useImovel } from "../../context/ImovelContext";
 import "./styles.css";
 
 function OrdersPage() {
+  const API_URL = "https://back-pdv-production.up.railway.app/pedidos";
+  const PRODUTOS_PEDIDO_API_URL = "https://back-pdv-production.up.railway.app/produtos-pedido";
+  
+  const { getAuthHeaders } = useImovel();
+  
   const [filter, setFilter] = useState("all"); // all, pending, completed, cancelled
+  const [orders, setOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
 
-  // Dados fictícios de pedidos
-  const orders = [
-    {
-      id: "ORD-001",
-      customer: "João Silva",
-      email: "joao.silva@email.com",
-      phone: "(11) 99999-9999",
-      items: [
-        { name: "Camisa Flamengo I 2024", quantity: 2, price: 299.90 },
-        { name: "Short Flamengo", quantity: 1, price: 149.90 }
-      ],
-      total: 749.70,
-      status: "pending",
-      date: "2024-03-20 14:30",
-      payment: "credit_card"
-    },
-    {
-      id: "ORD-002",
-      customer: "Maria Santos",
-      email: "maria.santos@email.com",
-      phone: "(11) 98888-8888",
-      items: [
-        { name: "Camisa Corinthians II 2024", quantity: 1, price: 349.90 }
-      ],
-      total: 349.90,
-      status: "completed",
-      date: "2024-03-19 10:15",
-      payment: "pix"
-    },
-    {
-      id: "ORD-003",
-      customer: "Pedro Oliveira",
-      email: "pedro.oliveira@email.com",
-      phone: "(11) 97777-7777",
-      items: [
-        { name: "Camisa São Paulo III", quantity: 3, price: 279.90 },
-        { name: "Meião São Paulo", quantity: 2, price: 89.90 }
-      ],
-      total: 1019.50,
-      status: "pending",
-      date: "2024-03-20 16:45",
-      payment: "debit_card"
-    },
-    {
-      id: "ORD-004",
-      customer: "Ana Costa",
-      email: "ana.costa@email.com",
-      phone: "(11) 96666-6666",
-      items: [
-        { name: "Camisa Palmeiras", quantity: 1, price: 319.90 }
-      ],
-      total: 319.90,
-      status: "cancelled",
-      date: "2024-03-18 09:20",
-      payment: "credit_card"
+  // Carregar pedidos ao montar o componente
+  useEffect(() => {
+    carregarPedidos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const carregarPedidos = async () => {
+    try {
+      setLoadingOrders(true);
+      const response = await axios.get(API_URL, {
+        headers: getAuthHeaders()
+      });
+
+      // Mapear os dados da API para o formato esperado
+      const pedidosMapeados = response.data.map(pedido => ({
+        id: `ORD-${String(pedido.pedido_id).padStart(3, '0')}`,
+        pedido_id: pedido.pedido_id,
+        customer: "Cliente não informado",
+        email: "-",
+        phone: "-",
+        items: [
+          {
+            name: pedido.ProdutoPedido?.nome || "Produto não informado",
+            quantity: 1,
+            price: pedido.ProdutoPedido?.valor || 0,
+            foto: pedido.ProdutoPedido?.foto_principal
+          }
+        ],
+        total: pedido.ProdutoPedido?.valor || 0,
+        status: pedido.status,
+        date: pedido.data_hora_entrega,
+        payment: "-",
+        observacao: pedido.observacao || "Sem observações",
+        data_cadastro: pedido.data_cadastro
+      }));
+
+      setOrders(pedidosMapeados);
+    } catch (error) {
+      console.error("Erro ao carregar pedidos:", error);
+      toast.error("Erro ao carregar pedidos da API!");
+    } finally {
+      setLoadingOrders(false);
     }
-  ];
+  };
+
 
   const filteredOrders = orders.filter(order => {
     if (filter === "all") return true;
@@ -100,10 +98,34 @@ function OrdersPage() {
     return new Date(dateString).toLocaleString('pt-BR');
   };
 
-  const handleStatusUpdate = (orderId, newStatus) => {
-    // Aqui você implementaria a atualização no backend
-    console.log(`Atualizando pedido ${orderId} para status: ${newStatus}`);
-    alert(`Pedido ${orderId} atualizado para: ${newStatus}`);
+  const handleStatusUpdate = async (pedidoId, newStatus) => {
+    try {
+      // Mapear status do frontend para o backend
+      const statusMap = {
+        "completed": "concluido",
+        "cancelled": "cancelado",
+        "pending": "pendente"
+      };
+
+      const statusBackend = statusMap[newStatus] || newStatus;
+
+      // Fazer requisição PATCH para atualizar o status
+      await axios.patch(`${API_URL}/${pedidoId}`, 
+        { status: statusBackend },
+        { headers: getAuthHeaders() }
+      );
+
+      toast.success(`Pedido atualizado com sucesso!`, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+
+      // Recarregar pedidos
+      await carregarPedidos();
+    } catch (error) {
+      console.error("Erro ao atualizar pedido:", error);
+      toast.error("Erro ao atualizar pedido!");
+    }
   };
 
   return (
@@ -111,6 +133,7 @@ function OrdersPage() {
       <SideBar />
       <div className="main-content">
         <div className="orders-container">
+          <ToastContainer />
           <div className="orders-header">
             <h1>Pedidos do E-commerce</h1>
             <p>Gerencie os pedidos realizados pela loja online</p>
@@ -172,7 +195,11 @@ function OrdersPage() {
 
           {/* Lista de Pedidos */}
           <div className="orders-list">
-            {filteredOrders.length === 0 ? (
+            {loadingOrders ? (
+              <div className="no-orders">
+                <p>Carregando pedidos...</p>
+              </div>
+            ) : filteredOrders.length === 0 ? (
               <div className="no-orders">
                 <p>Nenhum pedido encontrado</p>
               </div>
@@ -181,69 +208,86 @@ function OrdersPage() {
                 const statusInfo = getStatusBadge(order.status);
                 return (
                   <div key={order.id} className="order-card">
-                    <div className="order-header">
-                      <div className="order-info">
-                        <h3 className="order-id">{order.id}</h3>
-                        <span className="order-date">{formatDate(order.date)}</span>
-                      </div>
-                      <div className={`status-badge ${statusInfo.class}`}>
-                        {statusInfo.label}
-                      </div>
-                    </div>
+                    <div className="order-card-content">
+                      {order.items[0]?.foto && (
+                        <div className="order-image">
+                          <img 
+                            src={order.items[0].foto} 
+                            alt={order.items[0].name}
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
 
-                    <div className="order-details">
-                      <div className="customer-info">
-                        <h4>Cliente</h4>
-                        <p><strong>{order.customer}</strong></p>
-                        <p>{order.email}</p>
-                        <p>{order.phone}</p>
-                      </div>
-
-                      <div className="items-info">
-                        <h4>Itens do Pedido</h4>
-                        {order.items.map((item, index) => (
-                          <div key={index} className="order-item">
-                            <span className="item-name">{item.name}</span>
-                            <span className="item-quantity">Qtd: {item.quantity}</span>
-                            <span className="item-price">{formatCurrency(item.price)}</span>
+                      <div className="order-info-container">
+                        <div className="order-header">
+                          <div className="order-info">
+                            <h3 className="order-id">{order.id}</h3>
+                            <span className="order-date">{formatDate(order.date)}</span>
                           </div>
-                        ))}
-                      </div>
+                          <div className={`status-badge ${statusInfo.class}`}>
+                            {statusInfo.label}
+                          </div>
+                        </div>
 
-                      <div className="payment-info">
-                        <h4>Pagamento</h4>
-                        <p><strong>Método:</strong> {getPaymentMethod(order.payment)}</p>
-                        <p><strong>Total:</strong> {formatCurrency(order.total)}</p>
-                      </div>
-                    </div>
+                        <div className="order-details">
+                          <div className="customer-info">
+                            <h4>Cliente</h4>
+                            <p><strong>{order.customer}</strong></p>
+                            <p>{order.email}</p>
+                            <p>{order.phone}</p>
+                          </div>
 
-                    <div className="order-actions">
-                      {order.status === "pending" && (
-                        <>
-                          <button 
-                            className="action-btn complete-btn"
-                            onClick={() => handleStatusUpdate(order.id, "completed")}
-                          >
-                            Marcar como Concluído
-                          </button>
-                          <button 
-                            className="action-btn cancel-btn"
-                            onClick={() => handleStatusUpdate(order.id, "cancelled")}
-                          >
-                            Cancelar Pedido
-                          </button>
-                        </>
-                      )}
-                      {order.status === "completed" && (
-                        <button className="action-btn details-btn">
-                          Ver Detalhes
-                        </button>
-                      )}
-                      {order.status === "cancelled" && (
-                        <button className="action-btn details-btn">
-                          Ver Motivo
-                        </button>
-                      )}
+                          <div className="items-info">
+                            <h4>Itens do Pedido</h4>
+                            {order.items.map((item, index) => (
+                              <div key={index} className="order-item">
+                                <span className="item-name">{item.name}</span>
+                                <span className="item-quantity">Qtd: {item.quantity}</span>
+                                <span className="item-price">{formatCurrency(item.price)}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="payment-info">
+                            <h4>Entrega e Observações</h4>
+                            <p><strong>Data/Hora Entrega:</strong> {formatDate(order.date)}</p>
+                            <p><strong>Observação:</strong> {order.observacao}</p>
+                            <p><strong>Total:</strong> {formatCurrency(order.total)}</p>
+                          </div>
+                        </div>
+
+                        <div className="order-actions">
+                          {order.status === "pendente" && (
+                            <>
+                              <button 
+                                className="action-btn complete-btn"
+                                onClick={() => handleStatusUpdate(order.pedido_id, "completed")}
+                              >
+                                Marcar como Concluído
+                              </button>
+                              <button 
+                                className="action-btn cancel-btn"
+                                onClick={() => handleStatusUpdate(order.pedido_id, "cancelled")}
+                              >
+                                Cancelar Pedido
+                              </button>
+                            </>
+                          )}
+                          {order.status === "concluido" && (
+                            <span className="status-completed-info">
+                              Pedido concluído
+                            </span>
+                          )}
+                          {order.status === "cancelado" && (
+                            <span className="status-completed-info">
+                              Pedido cancelado
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 );

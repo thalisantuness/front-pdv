@@ -15,6 +15,7 @@ import EditImovel from "./pages/edit-product-admin";
 import OrdersPage from "./pages/orders"; 
 import AppointmentsPage from "./pages/appointments";
 import ReferralsPage from "./pages/referrals";
+import ServicesProvidedPage from "./pages/services-provided";
 
 function App() {
   return (
@@ -59,6 +60,12 @@ function App() {
             <Route path="/agendamentos" element={
               <ProtectRoute>
                 <AppointmentsPage />
+              </ProtectRoute>
+            } />
+            
+            <Route path="/servicos-prestados" element={
+              <ProtectRoute>
+                <ServicesProvidedPage />
               </ProtectRoute>
             } />
             
