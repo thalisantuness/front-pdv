@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import { ImovelProvider } from "./context/ImovelContext";
+import { PlataformaProvider } from "./context/PlataformaContext";
 import "./global.css";
 
 import Home from "./pages/home";
@@ -12,68 +12,92 @@ import UserListAdmin from "./pages/user-list-admin"; // Adicionei o import para 
 import LoginAdmin from "./pages/login-admin";
 import ProtectRoute from "./components/ProtectRoute"; // Corrigi para usar apenas um nome (ProtectedRoute -> ProtectRoute)
 import EditImovel from "./pages/edit-product-admin";
-import OrdersPage from "./pages/orders"; 
+import OrdersPage from "./pages/orders";
 import AppointmentsPage from "./pages/appointments";
 import ReferralsPage from "./pages/referrals";
 import ServicesProvidedPage from "./pages/services-provided";
+import ProdutosPedido from "./pages/products-order";
 
 function App() {
   return (
-    <ImovelProvider>
+    <PlataformaProvider>
       <Router>
         <div className="container">
           <Routes>
             <Route path="/" element={<LoginAdmin />} />
-            
-            {/* Rotas protegidas */}
-            <Route path="/home" element={
-              <ProtectRoute>
-                <Home />
-              </ProtectRoute>
-            } />
-            
-            <Route path="/produtos" element={
-              <ProtectRoute>
-                <ImovelListPage />
-              </ProtectRoute>
-            } />
-            
-            <Route path="/vender/" element={
-              <ProtectRoute>
-                <ImovelListDetails />
-              </ProtectRoute>
-            } />
 
-     <Route path="/add-product/" element={
-              <ProtectRoute>
-                < RegisterProduct />
-              </ProtectRoute>
-            } />
-           
-            
-            <Route path="/pedidos" element={
-              <ProtectRoute>
-                <OrdersPage />
-              </ProtectRoute>
-            } /> 
-            
-            <Route path="/agendamentos" element={
-              <ProtectRoute>
-                <AppointmentsPage />
-              </ProtectRoute>
-            } />
-            
-            <Route path="/servicos-prestados" element={
-              <ProtectRoute>
-                <ServicesProvidedPage />
-              </ProtectRoute>
-            } />
-            
-            <Route path="/indicacoes" element={
-              <ProtectRoute>
-                <ReferralsPage />
-              </ProtectRoute>
-            } />
+            {/* Rotas protegidas */}
+            <Route
+              path="/home"
+              element={
+                <ProtectRoute>
+                  <Home />
+                </ProtectRoute>
+              }
+            />
+
+            <Route
+              path="/produtos"
+              element={
+                <ProtectRoute>
+                  <ImovelListPage />
+                </ProtectRoute>
+              }
+            />
+
+            <Route
+              path="/vender/"
+              element={
+                <ProtectRoute>
+                  <ImovelListDetails />
+                </ProtectRoute>
+              }
+            />
+
+            <Route
+              path="/add-product/"
+              element={
+                <ProtectRoute>
+                  <RegisterProduct />
+                </ProtectRoute>
+              }
+            />
+
+            <Route
+              path="/pedidos"
+              element={
+                <ProtectRoute>
+                  <OrdersPage />
+                </ProtectRoute>
+              }
+            />
+
+            <Route
+              path="/agendamentos"
+              element={
+                <ProtectRoute>
+                  <AppointmentsPage />
+                </ProtectRoute>
+              }
+            />
+
+            <Route
+              path="/servicos-prestados"
+              element={
+                <ProtectRoute>
+                  <ServicesProvidedPage />
+                </ProtectRoute>
+              }
+            />
+
+            <Route
+              path="/indicacoes"
+              element={
+                <ProtectRoute>
+                  <ReferralsPage />
+                </ProtectRoute>
+              }
+            />
 
             <Route
               path="/editar-produto/:id"
@@ -83,7 +107,7 @@ function App() {
                 </ProtectRoute>
               }
             />
-            
+
             <Route
               path="/usuarios"
               element={
@@ -92,10 +116,19 @@ function App() {
                 </ProtectRoute>
               }
             />
+
+            <Route
+              path="/produtos-pedido"
+              element={
+                <ProtectRoute>
+                  <ProdutosPedido />
+                </ProtectRoute>
+              }
+            />
           </Routes>
         </div>
       </Router>
-    </ImovelProvider>
+    </PlataformaProvider>
   );
 }
 

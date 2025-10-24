@@ -839,3 +839,45 @@
     flex-direction: column;
   }
 }
+
+/* --- Adicionar ao styles.css --- */
+
+/* Estilo para a imagem de avatar na listagem e no modal de exclusão */
+.user-avatar .avatar-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover; /* Garante que a imagem cubra o espaço sem distorcer */
+  border: 2px solid #ddd;
+}
+
+/* Estilo para o preview da imagem no modal de edição/cadastro */
+.form-group-preview {
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.form-group-preview label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #555;
+  text-align: left;
+}
+
+.form-group-preview .avatar-preview {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #eee;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Ajuste no input de arquivo para melhor aparência */
+.modal-form .form-group input[type="file"] {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fafafa;
+}

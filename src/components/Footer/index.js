@@ -3,14 +3,12 @@ import "./styles.css";
 import Logo from "../../assets/logo-transparente.png"
 import { Link } from "react-router-dom";
 
-
 function Footer() {
   return (
     <>
       <footer className="footer">
         <div className="footer-left">
-          <img src={Logo} alt="Logipsum" className="footer-logo" />
-      
+          <img src={Logo} alt="Cardial I.T" className="footer-logo" />
         </div>
 
         <div className="footer-right">

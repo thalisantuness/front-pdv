@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { useImovel } from "../../context/ImovelContext";
+import { usePlataforma } from "../../context/PlataformaContext";
 
 import "./style.css";
 
 function Caroussel() {
-  const { imagens } = useImovel(); 
+  const { imagens } = usePlataforma(); 
   const [index, setIndex] = useState(0);
 
   const nextSlide = () => {

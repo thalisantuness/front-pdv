@@ -5,13 +5,13 @@ import { ToastContainer, toast } from 'react-toastify';
 import { FaTrash, FaPlus, FaSpinner, FaCheck, FaTimes, FaSave, FaArrowLeft } from 'react-icons/fa';
 import SideBar from '../../components/SideBar';
 import Footer from '../../components/Footer';
-import { useImovel } from '../../context/ImovelContext';
+import { usePlataforma } from '../../context/PlataformaContext';
 import './styles.css';
 
 function EditImovel() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { getAuthHeaders, isAuthenticated } = useImovel();
+  const { getAuthHeaders, isAuthenticated } = usePlataforma();
   
   const [formData, setFormData] = useState({
     nome: '',

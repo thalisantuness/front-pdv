@@ -3,11 +3,11 @@ import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import { FaTrash, FaPlus, FaSpinner, FaCheck, FaTimes, FaArrowLeft } from 'react-icons/fa';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useImovel } from '../../context/ImovelContext';
+import { usePlataforma } from '../../context/PlataformaContext';
 import './styles.css';
 
 function FormRegister({ productId }) {
-  const { getAuthHeaders, isAuthenticated } = useImovel();
+  const { getAuthHeaders, isAuthenticated } = usePlataforma();
   const navigate = useNavigate();
   const { id } = useParams();
   

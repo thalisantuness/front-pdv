@@ -1,10 +1,10 @@
 // components/ProtectedRoute/index.js
 import React from "react";
 import { Navigate } from "react-router-dom";
-import { useImovel } from "../../context/ImovelContext";
+import { usePlataforma } from "../../context/PlataformaContext";
 
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useImovel();
+  const { isAuthenticated, loading } = usePlataforma();
 
   if (loading) {
     return (

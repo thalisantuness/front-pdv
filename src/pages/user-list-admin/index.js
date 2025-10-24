@@ -5,7 +5,10 @@ import "./styles.css";
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
 import SideBar from "../../components/SideBar/index";
-import { useImovel } from "../../context/ImovelContext";
+import { usePlataforma } from "../../context/PlataformaContext";
+
+// Adicione 'react-toastify/dist/ReactToastify.css' se ainda não estiver importado no seu App.js
+import 'react-toastify/dist/ReactToastify.css';
 
 function UserListAdmin() {
   const [usuarios, setUsuarios] = useState([]);
@@ -20,11 +23,11 @@ function UserListAdmin() {
     nome: "",
     telefone: "",
     role: "cliente",
-    foto_perfil: null
+    foto_perfil: null // <- Vai armazenar a URL (edição) ou o base64 (novo upload)
   });
   const [formLoading, setFormLoading] = useState(false);
   
-  const { getAuthHeaders, isAuthenticated, loading: contextLoading, usuario: usuarioLogado } = useImovel();
+  const { getAuthHeaders, isAuthenticated, loading: contextLoading, usuario: usuarioLogado } = usePlataforma();
   const navigate = useNavigate();
 
   // URL da API
@@ -35,7 +38,9 @@ function UserListAdmin() {
     if (!contextLoading) {
       fetchUsers();
     }
-  }, [contextLoading]);
+  }, [contextLoading]); // eslint-disable-line react-hooks/exhaustive-deps
+  // A dependência de getAuthHeaders pode causar loops se a função for recriada a cada render.
+  // Se houver problemas, considere memoizar getAuthHeaders no context.
 
   const fetchUsers = async () => {
     try {
@@ -54,51 +59,42 @@ function UserListAdmin() {
         headers: getAuthHeaders()
       });
 
+      let usersData = [];
+
+      // Ajuste para lidar com ambas as estruturas de resposta
       if (response.data && response.data.usuarios && Array.isArray(response.data.usuarios)) {
-        const usersData = response.data.usuarios.map(user => ({
-          id: user.usuario_id,
-          nome: user.nome || user.email,
-          email: user.email,
-          telefone: user.telefone || "Não informado",
-          tipo: mapUserRole(user.role),
-          role: user.role,
-          data_cadastro: user.data_cadastro || new Date().toISOString(),
-          ultimo_acesso: user.data_update || user.data_cadastro || new Date().toISOString()
-        }));
-
-        setUsuarios(usersData);
-        
-        if (response.data.message && response.data.usuarios.length === 0) {
-          toast.info(response.data.message, {
-            position: "top-right",
-            autoClose: 4000,
-          });
-        }
-        
+        usersData = response.data.usuarios;
       } else if (Array.isArray(response.data)) {
-        const usersData = response.data.map(user => ({
-          id: user.usuario_id,
-          nome: user.nome || user.email,
-          email: user.email,
-          telefone: user.telefone || "Não informado",
-          tipo: mapUserRole(user.role),
-          role: user.role,
-          data_cadastro: user.data_cadastro || new Date().toISOString(),
-          ultimo_acesso: user.data_update || user.data_cadastro || new Date().toISOString()
-        }));
-
-        setUsuarios(usersData);
+        usersData = response.data;
       } else {
-        console.warn("Estrutura de resposta inesperada:", response.data);
-        
-        if (response.data.message) {
-          toast.info(response.data.message, {
-            position: "top-right",
-            autoClose: 4000,
-          });
-        }
-        
-        setUsuarios([]);
+         console.warn("Estrutura de resposta inesperada:", response.data);
+         setUsuarios([]);
+         setLoading(false);
+         if (response.data.message) {
+            toast.info(response.data.message);
+         }
+         return;
+      }
+      
+      const mappedUsers = usersData.map(user => ({
+        id: user.usuario_id,
+        nome: user.nome || user.email,
+        email: user.email,
+        telefone: user.telefone || "Não informado",
+        tipo: mapUserRole(user.role),
+        role: user.role,
+        foto_perfil: user.foto_perfil || null, // <<< ADICIONADO
+        data_cadastro: user.data_cadastro || new Date().toISOString(),
+        ultimo_acesso: user.data_update || user.data_cadastro || new Date().toISOString()
+      }));
+
+      setUsuarios(mappedUsers);
+      
+      if (response.data.message && usersData.length === 0) {
+        toast.info(response.data.message, {
+          position: "top-right",
+          autoClose: 4000,
+        });
       }
 
       setLoading(false);
@@ -201,7 +197,7 @@ function UserListAdmin() {
         nome: userData.nome || "",
         telefone: userData.telefone || "",
         role: userData.role || "cliente",
-        foto_perfil: userData.foto_perfil || ""
+        foto_perfil: userData.foto_perfil || null // <- Carrega a URL da foto
       });
       
       setEditingUser(id);
@@ -230,7 +226,7 @@ function UserListAdmin() {
       nome: "",
       telefone: "",
       role: defaultRole,
-      foto_perfil: ""
+      foto_perfil: null // <- Limpa a foto
     });
     setEditingUser(null);
     setShowModal(true);
@@ -245,7 +241,7 @@ function UserListAdmin() {
       nome: "",
       telefone: "",
       role: "cliente",
-      foto_perfil: ""
+      foto_perfil: null // <- Limpa a foto
     });
   };
 
@@ -256,6 +252,43 @@ function UserListAdmin() {
       [name]: value
     }));
   };
+
+  // <<< NOVA FUNÇÃO PARA LIDAR COM UPLOAD DE ARQUIVO >>>
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) {
+      setFormData(prev => ({ ...prev, foto_perfil: null }));
+      return;
+    }
+
+    // Validação simples (ex: 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.warn("A imagem é muito grande. O limite é de 2MB.");
+      e.target.value = null; // Limpa o input
+      return;
+    }
+
+    // Validação de tipo
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+       toast.warn("Formato de arquivo inválido. Use JPG, PNG ou WebP.");
+       e.target.value = null; // Limpa o input
+       return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      // O resultado (reader.result) é a string em base64
+      setFormData(prev => ({
+        ...prev,
+        foto_perfil: reader.result 
+      }));
+    };
+    reader.onerror = () => {
+      toast.error("Erro ao ler o arquivo de imagem.");
+    };
+    reader.readAsDataURL(file);
+  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -269,13 +302,23 @@ function UserListAdmin() {
           nome: formData.nome,
           telefone: formData.telefone,
           role: formData.role,
-          foto_perfil: formData.foto_perfil || ""
         };
 
         // Só inclui a senha se foi alterada
         if (formData.senha) {
           payload.senha = formData.senha;
         }
+
+        // <<< LÓGICA DA FOTO PARA EDIÇÃO >>>
+        // Só envia a 'foto_perfil' se for uma nova imagem (base64)
+        // Se for a URL antiga, não envia, a API manterá a existente.
+        if (formData.foto_perfil && formData.foto_perfil.startsWith('data:image')) {
+          payload.foto_perfil = formData.foto_perfil;
+        } 
+        // (Opcional) Se você quiser permitir 'remover' a foto:
+        // else if (formData.foto_perfil === null) {
+        //   payload.foto_perfil = null;
+        // }
 
         await axios.put(`${API_URL}/${editingUser}`, payload, {
           headers: getAuthHeaders()
@@ -293,7 +336,9 @@ function UserListAdmin() {
           nome: formData.nome,
           telefone: formData.telefone,
           role: formData.role,
-          foto_perfil: formData.foto_perfil || ""
+          // <<< LÓGICA DA FOTO PARA CADASTRO >>>
+          // Envia o base64 se existir, ou null se não
+          foto_perfil: formData.foto_perfil || null 
         };
 
         await axios.post(CADASTRO_URL, payload, {
@@ -472,9 +517,16 @@ function UserListAdmin() {
                   {usuarios.map((usuario) => (
                     <div key={usuario.id} className="table-row">
                       <div className="table-col user">
+                        
+                        {/* <<< AJUSTE PARA MOSTRAR FOTO OU ÍCONE >>> */}
                         <div className="user-avatar">
-                          {getTipoIcon(usuario.tipo)}
+                          {usuario.foto_perfil ? (
+                            <img src={usuario.foto_perfil} alt={`Foto de ${usuario.nome}`} className="avatar-image" />
+                          ) : (
+                            getTipoIcon(usuario.tipo)
+                          )}
                         </div>
+                        
                         <div className="user-info">
                           <div className="user-name">{usuario.nome}</div>
                           <div className="user-email">{usuario.email}</div>
@@ -550,6 +602,7 @@ function UserListAdmin() {
             </div>
             
             <form onSubmit={handleSubmit} className="modal-form">
+              {/* --- Campos existentes --- */}
               <div className="form-group">
                 <label htmlFor="email">Email *</label>
                 <input
@@ -574,7 +627,7 @@ function UserListAdmin() {
                   value={formData.senha}
                   onChange={handleInputChange}
                   placeholder={editingUser ? "Digite nova senha (opcional)" : "Digite uma senha"}
-                  minLength={editingUser ? "0" : "6"}
+                  minLength={editingUser ? undefined : 6} // Remove minLength se estiver editando
                   required={!editingUser}
                 />
               </div>
@@ -632,6 +685,40 @@ function UserListAdmin() {
                 )}
               </div>
 
+              {/* <<< NOVO CAMPO DE FOTO >>> */}
+              
+              {/* Preview da foto atual (só aparece na edição se a foto existir e não for um base64 novo) */}
+              {editingUser && formData.foto_perfil && !formData.foto_perfil.startsWith('data:') && (
+                <div className="form-group-preview">
+                  <label>Foto Atual:</label>
+                  <img src={formData.foto_perfil} alt="Foto atual" className="avatar-preview" />
+                </div>
+              )}
+              
+              {/* Preview da nova foto (base64) */}
+              {formData.foto_perfil && formData.foto_perfil.startsWith('data:') && (
+                 <div className="form-group-preview">
+                  <label>Nova Foto (Preview):</label>
+                  <img src={formData.foto_perfil} alt="Preview da nova foto" className="avatar-preview" />
+                </div>
+              )}
+
+              <div className="form-group">
+                <label htmlFor="foto_perfil_input">Foto de Perfil</label>
+                <input
+                  type="file"
+                  id="foto_perfil_input"
+                  name="foto_perfil_input" // Nome diferente para não conflitar com o state
+                  accept="image/png, image/jpeg, image/webp"
+                  onChange={handleFileChange} // Usa o handler de arquivo
+                />
+                <small className="form-help">
+                  {editingUser ? "Envie uma nova foto para substituir a atual (Opcional)." : "Envie uma foto (Opcional)."}
+                </small>
+              </div>
+              {/* --- Fim do novo campo --- */}
+
+
               <div className="modal-actions">
                 <button
                   type="button"
@@ -679,8 +766,13 @@ function UserListAdmin() {
               </div>
               
               <div className="user-to-delete">
+                {/* <<< AJUSTE PARA MOSTRAR FOTO OU ÍCONE >>> */}
                 <div className="user-avatar">
-                  {getTipoIcon(usuarioToDelete.tipo)}
+                  {usuarioToDelete.foto_perfil ? (
+                    <img src={usuarioToDelete.foto_perfil} alt={`Foto de ${usuarioToDelete.nome}`} className="avatar-image" />
+                  ) : (
+                    getTipoIcon(usuarioToDelete.tipo)
+                  )}
                 </div>
                 <div className="user-details">
                   <div className="user-name">{usuarioToDelete.nome}</div>

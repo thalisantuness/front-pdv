@@ -1,8 +1,8 @@
 import { createContext, useContext, useState, useEffect } from "react";
 
-const ImovelContext = createContext();
+const PlataformaContext = createContext();
 
-export const ImovelProvider = ({ children }) => {
+export const PlataformaProvider = ({ children }) => {
   const [filtros, setFiltros] = useState({});
   const [usuario, setUsuario] = useState(null);
   const [token, setToken] = useState(null);
@@ -64,7 +64,7 @@ export const ImovelProvider = ({ children }) => {
   };
 
   return (
-    <ImovelContext.Provider value={{ 
+    <PlataformaContext.Provider value={{ 
       filtros, 
       setFiltros,
       usuario,
@@ -76,14 +76,14 @@ export const ImovelProvider = ({ children }) => {
       getAuthHeaders
     }}>
       {children}
-    </ImovelContext.Provider>
+    </PlataformaContext.Provider>
   );
 };
 
-export const useImovel = () => {
-  const context = useContext(ImovelContext);
+export const usePlataforma = () => {
+  const context = useContext(PlataformaContext);
   if (!context) {
-    throw new Error("useImovel deve ser usado dentro de um ImovelProvider");
+    throw new Error("usePlataforma deve ser usado dentro de um PlataformaProvider");
   }
   return context;
 };

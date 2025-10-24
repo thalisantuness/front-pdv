@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaTrash, FaEdit, FaPlus, FaBox, FaSync, FaTimes, FaExclamationTriangle, FaSave, FaFilter } from "react-icons/fa";
 import axios from "axios";
-import { useImovel } from "../../context/ImovelContext";
+import { usePlataforma } from "../../context/PlataformaContext";
 import "./styles.css";
 import { ToastContainer, toast } from 'react-toastify';
 import { Link, useNavigate } from "react-router-dom";
@@ -35,7 +35,7 @@ function ProductListAdmin() {
   });
   const [formLoading, setFormLoading] = useState(false);
   
-  const { getAuthHeaders, isAuthenticated, loading: contextLoading, usuario: usuarioLogado } = useImovel();
+  const { getAuthHeaders, isAuthenticated, loading: contextLoading, usuario: usuarioLogado } = usePlataforma();
   const navigate = useNavigate();
 
   // URL da API
@@ -296,7 +296,7 @@ function ProductListAdmin() {
   if (!isAuthenticated()) {
     return (
       <div className="container">
-        <SideBar />
+        {/* <SideBar /> */}
         <div className="main-content">
           <div className="loading-container">
             <div className="loading-spinner"></div>
@@ -310,7 +310,7 @@ function ProductListAdmin() {
   if (loading) {
     return (
       <div className="container">
-        <SideBar />
+        {/* <SideBar /> */}
         <div className="main-content">
           <div className="loading-container">
             <div className="loading-spinner"></div>
@@ -323,7 +323,7 @@ function ProductListAdmin() {
 
   return (
     <div className="container">
-      <SideBar />
+      {/* <SideBar /> */}
       <div className="main-content">
         <div className="product-admin-container">
           <ToastContainer />

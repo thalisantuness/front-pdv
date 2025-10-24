@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import "./styles.css";
 import { ToastContainer, toast } from 'react-toastify';
-import { useImovel } from "../../context/ImovelContext";
+import { usePlataforma } from "../../context/PlataformaContext";
 
 export default function FormLogin() {
   const [formData, setFormData] = useState({
@@ -10,7 +10,7 @@ export default function FormLogin() {
     senha: "",
   });
   const [loading, setLoading] = useState(false);
-  const { login } = useImovel();
+  const { login } = usePlataforma();
 
   const handleChange = (e) => {
     const { name, value } = e.target;

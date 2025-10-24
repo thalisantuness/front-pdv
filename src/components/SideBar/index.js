@@ -13,9 +13,9 @@ export default function SideBar() {
     };
 
     checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
+    window.addEventListener("resize", checkScreenSize);
 
-    return () => window.removeEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
   const toggleMobileMenu = () => {
@@ -32,18 +32,17 @@ export default function SideBar() {
     <>
       {/* Botão hamburger para mobile */}
       {isMobile && (
-        <button 
-          className="menu-toggle" 
-          onClick={toggleMobileMenu}
-        >
+        <button className="menu-toggle" onClick={toggleMobileMenu}>
           ☰
         </button>
       )}
 
-      <header className={`navbar ${isMobileOpen ? 'mobile-open' : ''}`}>
-        <Link to="/" onClick={closeMobileMenu}>
-          <img src={Logo} className="logo-img" alt="Logo" />
-        </Link>
+      <header className={`navbar ${isMobileOpen ? "mobile-open" : ""}`}>
+        <div className="logo-container">
+          <Link to="/" onClick={closeMobileMenu}>
+            <img src={Logo} className="logo-img" alt="Logo" />
+          </Link>
+        </div>
 
         <div className="links">
           <Link to="/produtos" onClick={closeMobileMenu}>
@@ -58,23 +57,19 @@ export default function SideBar() {
             Agendamentos
           </Link>
 
-          <Link to="/servicos-prestados" onClick={closeMobileMenu}>
-            Serviços Prestados
-          </Link>
-
-          <Link to="/indicacoes" onClick={closeMobileMenu}>
+          {/* <Link to="/indicacoes" onClick={closeMobileMenu}>
             Indicações
-          </Link>
- 
+          </Link> */}
+
           <Link to="/usuarios" onClick={closeMobileMenu}>
             Usuários
           </Link>
 
-          <Link to="/vender" onClick={closeMobileMenu}>
+          {/* <Link to="/vender" onClick={closeMobileMenu}>
             Vender
-          </Link>
+          </Link> */}
         </div>
       </header>
     </>
-  ); 
+  );
 }

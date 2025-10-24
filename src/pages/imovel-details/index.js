@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaShoppingCart, FaTrash, FaPlus, FaMinus, FaSearch } from "react-icons/fa";
 import axios from "axios";
-import { useImovel } from "../../context/ImovelContext";
+import { usePlataforma } from "../../context/PlataformaContext";
 import "./styles.css";
 import { ToastContainer, toast } from 'react-toastify';
 import SideBar from "../../components/SideBar/index";
@@ -11,7 +11,7 @@ function PDVVendas() {
   const [carrinho, setCarrinho] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const { getAuthHeaders, isAuthenticated } = useImovel();
+  const { getAuthHeaders, isAuthenticated } = usePlataforma();
 
   // URL da API
   const API_URL = "https://back-pdv-production.up.railway.app/produtos";

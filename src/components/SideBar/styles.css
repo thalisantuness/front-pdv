@@ -14,9 +14,27 @@
   z-index: 999;
 }
 
-.logo-img {
-  height: 120px;
+/* Container para a logo */
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 0 20px;
   margin-bottom: 40px;
+}
+
+.logo-img {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  transition: all 0.3s ease;
+}
+
+/* Tamanhos específicos para desktop */
+.logo-img {
+  width: 180px;
+  max-height: 120px;
 }
 
 .links {
@@ -68,8 +86,15 @@
     width: 100%;
   }
   
+  /* Ajustes da logo para tablet */
+  .logo-container {
+    padding: 0 15px;
+    margin-bottom: 30px;
+  }
+  
   .logo-img {
-    height: 100px;
+    width: 150px;
+    max-height: 100px;
   }
   
   /* Botão hamburger para mobile */
@@ -93,12 +118,34 @@
     width: 180px;
   }
   
+  /* Ajustes da logo para mobile */
+  .logo-container {
+    padding: 0 10px;
+    margin-bottom: 25px;
+  }
+  
   .logo-img {
-    height: 80px;
+    width: 130px;
+    max-height: 80px;
   }
   
   .links a {
     padding: 10px 15px;
     font-size: 14px;
+  }
+}
+
+@media (width <= 320px) {
+  .navbar {
+    width: 160px;
+  }
+  
+  .logo-container {
+    margin-bottom: 20px;
+  }
+  
+  .logo-img {
+    width: 110px;
+    max-height: 70px;
   }
 }
