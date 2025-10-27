@@ -13,10 +13,7 @@ import LoginAdmin from "./pages/login-admin";
 import ProtectRoute from "./components/ProtectRoute"; // Corrigi para usar apenas um nome (ProtectedRoute -> ProtectRoute)
 import EditImovel from "./pages/edit-product-admin";
 import OrdersPage from "./pages/orders";
-import AppointmentsPage from "./pages/appointments";
 import ReferralsPage from "./pages/referrals";
-import ServicesProvidedPage from "./pages/services-provided";
-import ProdutosPedido from "./pages/products-order";
 
 function App() {
   return (
@@ -73,24 +70,6 @@ function App() {
             />
 
             <Route
-              path="/agendamentos"
-              element={
-                <ProtectRoute>
-                  <AppointmentsPage />
-                </ProtectRoute>
-              }
-            />
-
-            <Route
-              path="/servicos-prestados"
-              element={
-                <ProtectRoute>
-                  <ServicesProvidedPage />
-                </ProtectRoute>
-              }
-            />
-
-            <Route
               path="/indicacoes"
               element={
                 <ProtectRoute>
@@ -113,15 +92,6 @@ function App() {
               element={
                 <ProtectRoute>
                   <UserListAdmin />
-                </ProtectRoute>
-              }
-            />
-
-            <Route
-              path="/produtos-pedido"
-              element={
-                <ProtectRoute>
-                  <ProdutosPedido />
                 </ProtectRoute>
               }
             />

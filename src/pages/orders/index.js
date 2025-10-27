@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import SideBar from "../../components/SideBar/index";
 import Footer from "../../components/Footer/index";
-import { FaPlus, FaTimes, FaSearch, FaDollarSign, FaUser, FaBox, FaCalendar, FaEdit, FaTrash, FaEye, FaCheck, FaBan, FaShoppingCart, FaMoneyBillWave, FaChartLine, FaCalendarCheck } from "react-icons/fa";
+import { FaPlus, FaTimes, FaSearch, FaDollarSign, FaUser, FaCalendar, FaEdit, FaTrash, FaEye, FaCheck, FaBan, FaShoppingCart, FaMoneyBillWave, FaChartLine, FaCalendarCheck } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
 import { usePlataforma } from "../../context/PlataformaContext";
@@ -9,7 +9,7 @@ import "./styles.css";
 
 function OrdersPage() {
   const API_URL = "https://back-pdv-production.up.railway.app/pedidos";
-  const PRODUTOS_PEDIDO_API_URL = "https://back-pdv-production.up.railway.app/produtos-pedido";
+  const PRODUTOS_API_URL = "https://back-pdv-production.up.railway.app/produtos";
   const USUARIOS_API_URL = "https://back-pdv-production.up.railway.app/usuarios";
   
   const { getAuthHeaders, usuario: usuarioLogado } = usePlataforma();
@@ -17,11 +17,12 @@ function OrdersPage() {
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [orders, setOrders] = useState([]);
-  const [produtosPedido, setProdutosPedido] = useState([]);
+  const [produtos, setProdutos] = useState([]);
+  const [empresas, setEmpresas] = useState([]);
   const [clientes, setClientes] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [loadingProdutos, setLoadingProdutos] = useState(false);
-  const [loadingClientes, setLoadingClientes] = useState(false);
+  const [loadingUsuarios, setLoadingUsuarios] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -30,18 +31,21 @@ function OrdersPage() {
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    produto_pedido_id: "",
+    produto_id: "",
+    quantidade: "1",
     cliente_id: "",
+    empresa_id: "",
     data_hora_entrega: "",
     status: "pendente",
     observacao: ""
   });
 
-  // Carregar pedidos, produtos e clientes ao montar o componente
+  // Carregar pedidos, produtos e usuários ao montar o componente
   useEffect(() => {
     carregarPedidos();
-    carregarProdutosPedido();
-    carregarClientes();
+    carregarProdutos();
+    carregarUsuarios();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const carregarPedidos = async () => {
@@ -51,41 +55,37 @@ function OrdersPage() {
         headers: getAuthHeaders()
       });
 
-      const pedidosMapeados = response.data.map(pedido => {
-        const produtosPedido = Array.isArray(pedido.ProdutoPedidos) ? 
-          pedido.ProdutoPedidos : 
-          (pedido.ProdutoPedido ? [pedido.ProdutoPedido] : []);
-
-        const total = produtosPedido.reduce((sum, prod) => 
-          sum + (prod.valor * (prod.quantidade || 1)), 0
-        );
-
-        return {
-          id: `ORD-${String(pedido.pedido_id).padStart(3, '0')}`,
-          pedido_id: pedido.pedido_id,
-          cliente: pedido.Cliente?.nome || "Cliente não informado",
-          cliente_email: pedido.Cliente?.email || "-",
-          cliente_telefone: pedido.Cliente?.telefone || "-",
-          cliente_role: pedido.Cliente?.role || "-",
-          items: produtosPedido.map(prod => ({
-            produto_pedido_id: prod.produto_pedido_id,
-            name: prod.nome || "Produto não informado",
-            quantity: prod.quantidade || 1,
-            price: prod.valor || 0,
-            foto: prod.foto_principal,
-            categoria: prod.categoria || "Sem categoria",
-            descricao: prod.descricao || "Sem descrição"
-          })),
-          total: total,
-          status: pedido.status,
-          data_hora_entrega: pedido.data_hora_entrega,
-          observacao: pedido.observacao || "Sem observações",
-          data_cadastro: pedido.data_cadastro,
-          data_update: pedido.data_update,
-          empresa_nome: pedido.ProdutoPedido?.Empresa?.nome || "Empresa não informada",
-          empresa_email: pedido.ProdutoPedido?.Empresa?.email || "-"
-        };
-      });
+      const pedidosMapeados = response.data.map(pedido => ({
+        id: `ORD-${String(pedido.pedido_id).padStart(3, '0')}`,
+        pedido_id: pedido.pedido_id,
+        produto_id: pedido.produto_id,
+        quantidade: pedido.quantidade || 1,
+        // Informações do Cliente
+        cliente_id: pedido.cliente_id,
+        cliente: pedido.Cliente?.nome || "Cliente não informado",
+        cliente_email: pedido.Cliente?.email || "-",
+        cliente_telefone: pedido.Cliente?.telefone || "-",
+        cliente_role: pedido.Cliente?.role || "-",
+        // Informações da Empresa
+        empresa_id: pedido.empresa_id,
+        empresa_nome: pedido.Empresa?.nome || "Empresa não informada",
+        empresa_email: pedido.Empresa?.email || "-",
+        empresa_telefone: pedido.Empresa?.telefone || "-",
+        empresa_role: pedido.Empresa?.role || "-",
+        // Informações do Produto
+        produto_nome: pedido.Produto?.nome || "Produto não informado",
+        produto_valor: pedido.Produto?.valor || 0,
+        produto_foto: pedido.Produto?.foto_principal,
+        produto_menu: pedido.Produto?.menu,
+        // Calcular total
+        total: (pedido.Produto?.valor || 0) * (pedido.quantidade || 1),
+        // Outras informações
+        status: pedido.status,
+        data_hora_entrega: pedido.data_hora_entrega,
+        observacao: pedido.observacao || "Sem observações",
+        data_cadastro: pedido.data_cadastro,
+        data_update: pedido.data_update
+      }));
 
       setOrders(pedidosMapeados);
     } catch (error) {
@@ -96,13 +96,29 @@ function OrdersPage() {
     }
   };
 
-  const carregarProdutosPedido = async () => {
+  const carregarProdutos = async () => {
     try {
       setLoadingProdutos(true);
-      const response = await axios.get(PRODUTOS_PEDIDO_API_URL, {
+      const response = await axios.get(PRODUTOS_API_URL, {
         headers: getAuthHeaders()
       });
-      setProdutosPedido(response.data);
+      
+      // Filtrar produtos baseado nas empresas autorizadas
+      let produtosFiltrados = response.data;
+      
+      // Se o usuário for empresa, mostrar apenas produtos que ele pode usar
+      if (usuarioLogado?.role === "empresa") {
+        produtosFiltrados = response.data.filter(produto => {
+          // Se empresas_autorizadas está vazio ou null, produto disponível para todos
+          if (!produto.empresas_autorizadas || produto.empresas_autorizadas.length === 0) {
+            return true;
+          }
+          // Se empresas_autorizadas tem IDs, verificar se a empresa está na lista
+          return produto.empresas_autorizadas.includes(usuarioLogado.usuario_id);
+        });
+      }
+      
+      setProdutos(produtosFiltrados);
     } catch (error) {
       console.error("Erro ao carregar produtos:", error);
       toast.error("Erro ao carregar lista de produtos!");
@@ -111,22 +127,26 @@ function OrdersPage() {
     }
   };
 
-  const carregarClientes = async () => {
+  const carregarUsuarios = async () => {
     try {
-      setLoadingClientes(true);
+      setLoadingUsuarios(true);
       const response = await axios.get(USUARIOS_API_URL, {
         headers: getAuthHeaders()
       });
-      // Filtrar apenas clientes
-      const clientesFiltrados = response.data.filter(user => 
-        user.role === "cliente"
+      
+      // Separar clientes e empresas
+      const clientesFiltrados = response.data.filter(user => user.role === "cliente");
+      const empresasFiltradas = response.data.filter(user => 
+        user.role === "empresa" || user.role === "admin"
       );
+      
       setClientes(clientesFiltrados);
+      setEmpresas(empresasFiltradas);
     } catch (error) {
-      console.error("Erro ao carregar clientes:", error);
-      toast.error("Erro ao carregar lista de clientes!");
+      console.error("Erro ao carregar usuários:", error);
+      toast.error("Erro ao carregar lista de usuários!");
     } finally {
-      setLoadingClientes(false);
+      setLoadingUsuarios(false);
     }
   };
 
@@ -134,14 +154,14 @@ function OrdersPage() {
   const calcularEstatisticas = () => {
     const hoje = new Date().toISOString().split('T')[0];
     
-    // Faturamento realizado (pedidos confirmados)
+    // Faturamento realizado (pedidos confirmados e entregues)
     const faturamentoRealizado = orders
-      .filter(o => o.status === 'confirmado')
+      .filter(o => o.status === 'confirmado' || o.status === 'entregue')
       .reduce((total, o) => total + o.total, 0);
     
-    // Previsão de faturamento (pedidos pendentes)
+    // Previsão de faturamento (pedidos pendentes e em transporte)
     const previsaoFaturamento = orders
-      .filter(o => o.status === 'pendente')
+      .filter(o => o.status === 'pendente' || o.status === 'em_transporte')
       .reduce((total, o) => total + o.total, 0);
     
     // Pedidos de hoje
@@ -150,11 +170,11 @@ function OrdersPage() {
     );
     
     const faturamentoHoje = pedidosHoje
-      .filter(o => o.status === 'confirmado')
+      .filter(o => o.status === 'confirmado' || o.status === 'entregue')
       .reduce((total, o) => total + o.total, 0);
     
     const previsaoHoje = pedidosHoje
-      .filter(o => o.status === 'pendente')
+      .filter(o => o.status === 'pendente' || o.status === 'em_transporte')
       .reduce((total, o) => total + o.total, 0);
 
     return {
@@ -166,6 +186,8 @@ function OrdersPage() {
       totalPedidos: orders.length,
       pendentesCount: orders.filter(o => o.status === 'pendente').length,
       confirmadosCount: orders.filter(o => o.status === 'confirmado').length,
+      emTransporteCount: orders.filter(o => o.status === 'em_transporte').length,
+      entreguessCount: orders.filter(o => o.status === 'entregue').length,
       canceladosCount: orders.filter(o => o.status === 'cancelado').length,
     };
   };
@@ -175,18 +197,19 @@ function OrdersPage() {
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.cliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.items.some(item => 
-                           item.name.toLowerCase().includes(searchTerm.toLowerCase())
-                         );
+                         order.produto_nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         order.empresa_nome.toLowerCase().includes(searchTerm.toLowerCase());
     
     if (filter === "all") return matchesSearch;
-    return order.status === filter;
+    return order.status === filter && matchesSearch;
   });
 
   const getStatusBadge = (status) => {
     const statusConfig = {
       pendente: { label: "Pendente", class: "status-pending" },
       confirmado: { label: "Confirmado", class: "status-confirmed" },
+      em_transporte: { label: "Em Transporte", class: "status-transport" },
+      entregue: { label: "Entregue", class: "status-delivered" },
       cancelado: { label: "Cancelado", class: "status-cancelled" }
     };
     return statusConfig[status] || { label: status, class: "status-default" };
@@ -217,25 +240,39 @@ function OrdersPage() {
 
   const abrirModalNovo = () => {
     setPedidoEditando(null);
-    setFormData({
-      produto_pedido_id: "",
+    
+    // Preencher automaticamente baseado no role do usuário
+    let formInicial = {
+      produto_id: "",
+      quantidade: "1",
       cliente_id: "",
+      empresa_id: "",
       data_hora_entrega: "",
       status: "pendente",
       observacao: ""
-    });
+    };
+
+    if (usuarioLogado?.role === "cliente") {
+      formInicial.cliente_id = usuarioLogado.usuario_id.toString();
+    } else if (usuarioLogado?.role === "empresa" || usuarioLogado?.role === "admin") {
+      formInicial.empresa_id = usuarioLogado.usuario_id.toString();
+    }
+
+    setFormData(formInicial);
     setShowModal(true);
   };
 
   const abrirModalEditar = (pedido) => {
     setPedidoEditando(pedido);
     setFormData({
-      produto_pedido_id: pedido.items[0]?.produto_pedido_id?.toString() || "",
+      produto_id: pedido.produto_id?.toString() || "",
+      quantidade: pedido.quantidade?.toString() || "1",
       cliente_id: pedido.cliente_id?.toString() || "",
+      empresa_id: pedido.empresa_id?.toString() || "",
       data_hora_entrega: pedido.data_hora_entrega ? 
         new Date(pedido.data_hora_entrega).toISOString().slice(0, 16) : "",
       status: pedido.status,
-      observacao: pedido.observacao
+      observacao: pedido.observacao || ""
     });
     setShowModal(true);
   };
@@ -257,8 +294,10 @@ function OrdersPage() {
     setPedidoEditando(null);
     setPedidoParaDeletar(null);
     setFormData({
-      produto_pedido_id: "",
+      produto_id: "",
+      quantidade: "1",
       cliente_id: "",
+      empresa_id: "",
       data_hora_entrega: "",
       status: "pendente",
       observacao: ""
@@ -271,12 +310,21 @@ function OrdersPage() {
 
     try {
       const payload = {
-        produto_pedido_id: parseInt(formData.produto_pedido_id),
+        produto_id: parseInt(formData.produto_id),
+        quantidade: parseInt(formData.quantidade),
         cliente_id: parseInt(formData.cliente_id),
+        empresa_id: parseInt(formData.empresa_id),
         data_hora_entrega: new Date(formData.data_hora_entrega).toISOString(),
         status: formData.status,
         observacao: formData.observacao || ""
       };
+
+      // Validação
+      if (!payload.produto_id || !payload.cliente_id || !payload.empresa_id || !payload.data_hora_entrega) {
+        toast.error("Por favor, preencha todos os campos obrigatórios!");
+        setLoading(false);
+        return;
+      }
 
       if (pedidoEditando) {
         // Editar pedido existente
@@ -297,7 +345,24 @@ function OrdersPage() {
 
     } catch (error) {
       console.error("Erro ao salvar pedido:", error);
-      toast.error(`Erro ao ${pedidoEditando ? 'atualizar' : 'criar'} pedido. Tente novamente!`);
+      
+      // Mensagens de erro específicas
+      const errorData = error.response?.data;
+      let errorMessage = `Erro ao ${pedidoEditando ? 'atualizar' : 'criar'} pedido. Tente novamente!`;
+      
+      if (errorData?.error) {
+        if (errorData.error.includes("não autorizada")) {
+          errorMessage = "⚠️ Empresa não autorizada a usar este produto. Por favor, selecione outro produto ou entre em contato com o administrador.";
+        } else {
+          errorMessage = errorData.error;
+        }
+      } else if (errorData?.message) {
+        errorMessage = errorData.message;
+      }
+      
+      toast.error(errorMessage, {
+        autoClose: 5000, // 5 segundos para mensagens de erro
+      });
     } finally {
       setLoading(false);
     }
@@ -343,9 +408,31 @@ function OrdersPage() {
     }
   };
 
+  const handleCancelar = async (pedidoId) => {
+    try {
+      await axios.put(
+        `${API_URL}/${pedidoId}/cancelar`,
+        {},
+        { headers: getAuthHeaders() }
+      );
+
+      toast.success("Pedido cancelado com sucesso!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+
+      await carregarPedidos();
+    } catch (error) {
+      console.error("Erro ao cancelar pedido:", error);
+      toast.error("Erro ao cancelar pedido!");
+    }
+  };
+
   const getStatusText = (status) => {
     const statusTexts = {
       confirmado: "confirmado",
+      em_transporte: "marcado como em transporte",
+      entregue: "marcado como entregue",
       cancelado: "cancelado"
     };
     return statusTexts[status] || "atualizado";
@@ -362,15 +449,9 @@ function OrdersPage() {
             <div className="header-actions">
               <div className="header-title">
                 <h1>Pedidos</h1>
-                <p>Gerencie os pedidos realizados pela loja online</p>
+                <p>Gerencie os pedidos realizados</p>
               </div>
               <div className="header-buttons">
-                <button 
-                  className="nav-btn products-btn"
-                  onClick={() => window.location.href = '/produtos-pedido'}
-                >
-                  📦 Ver Produtos
-                </button>
                 <button 
                   className="new-order-btn"
                   onClick={abrirModalNovo}
@@ -392,7 +473,7 @@ function OrdersPage() {
                   {formatCurrency(estatisticas.faturamentoRealizado)}
                 </span>
                 <span className="big-number-label">Faturamento Realizado</span>
-                <span className="big-number-subtitle">Pedidos Confirmados</span>
+                <span className="big-number-subtitle">Pedidos Confirmados/Entregues</span>
               </div>
             </div>
 
@@ -405,7 +486,7 @@ function OrdersPage() {
                   {formatCurrency(estatisticas.previsaoFaturamento)}
                 </span>
                 <span className="big-number-label">Previsão de Faturamento</span>
-                <span className="big-number-subtitle">Pedidos Pendentes</span>
+                <span className="big-number-subtitle">Pedidos Pendentes/Em Transporte</span>
               </div>
             </div>
 
@@ -453,7 +534,7 @@ function OrdersPage() {
               <FaSearch className="search-icon" />
               <input
                 type="text"
-                placeholder="Buscar por cliente, ID ou produto..."
+                placeholder="Buscar por cliente, ID, produto ou empresa..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -477,6 +558,18 @@ function OrdersPage() {
                 onClick={() => setFilter("confirmado")}
               >
                 Confirmados
+              </button>
+              <button 
+                className={`filter-btn ${filter === "em_transporte" ? "active" : ""}`}
+                onClick={() => setFilter("em_transporte")}
+              >
+                Em Transporte
+              </button>
+              <button 
+                className={`filter-btn ${filter === "entregue" ? "active" : ""}`}
+                onClick={() => setFilter("entregue")}
+              >
+                Entregues
               </button>
               <button 
                 className={`filter-btn ${filter === "cancelado" ? "active" : ""}`}
@@ -503,11 +596,11 @@ function OrdersPage() {
                 return (
                   <div key={order.pedido_id} className="order-card">
                     <div className="order-card-content">
-                      {order.items[0]?.foto && (
+                      {order.produto_foto && (
                         <div className="order-image">
                           <img 
-                            src={order.items[0].foto} 
-                            alt={order.items[0].name}
+                            src={order.produto_foto} 
+                            alt={order.produto_nome}
                             onError={(e) => {
                               e.target.style.display = 'none';
                             }}
@@ -533,24 +626,21 @@ function OrdersPage() {
                           </div>
                         </div>
 
-                        {/* Detalhes dos Produtos */}
+                        {/* Detalhes do Produto */}
                         <div className="products-details-section">
-                          <h4>📦 Produtos do Pedido</h4>
-                          <div className="products-list">
-                            {order.items.map((item, index) => (
-                              <div key={index} className="product-item">
-                                <div className="product-info">
-                                  <strong>{item.name}</strong>
-                                  <span>Qtd: {item.quantity}</span>
-                                  <span>{formatCurrency(item.price)}</span>
-                                </div>
-                                {item.categoria && (
-                                  <div className="product-category">
-                                    <strong>Categoria:</strong> {item.categoria}
-                                  </div>
-                                )}
+                          <h4>📦 Produto</h4>
+                          <div className="product-item">
+                            <div className="product-info">
+                              <strong>{order.produto_nome}</strong>
+                              <span>Quantidade: {order.quantidade}</span>
+                              <span>Valor Unitário: {formatCurrency(order.produto_valor)}</span>
+                              <span>Total: {formatCurrency(order.total)}</span>
+                            </div>
+                            {order.produto_menu && (
+                              <div className="product-menu">
+                                <strong>Menu:</strong> {order.produto_menu}
                               </div>
-                            ))}
+                            )}
                           </div>
                         </div>
 
@@ -560,7 +650,13 @@ function OrdersPage() {
                             <p><strong>Nome:</strong> {order.cliente}</p>
                             <p><strong>Email:</strong> {order.cliente_email}</p>
                             <p><strong>Telefone:</strong> {order.cliente_telefone}</p>
-                            <p><strong>Tipo:</strong> {order.cliente_role}</p>
+                          </div>
+
+                          <div className="company-info">
+                            <h4>🏢 Empresa</h4>
+                            <p><strong>Nome:</strong> {order.empresa_nome}</p>
+                            <p><strong>Email:</strong> {order.empresa_email}</p>
+                            <p><strong>Telefone:</strong> {order.empresa_telefone}</p>
                           </div>
 
                           <div className="delivery-info">
@@ -573,12 +669,6 @@ function OrdersPage() {
                                 <p><strong>Atualização:</strong> {formatDateTime(order.data_update)}</p>
                               )}
                             </div>
-                          </div>
-
-                          <div className="company-info">
-                            <h4>🏢 Empresa</h4>
-                            <p><strong>Nome:</strong> {order.empresa_nome}</p>
-                            <p><strong>Email:</strong> {order.empresa_email}</p>
                           </div>
                         </div>
 
@@ -614,7 +704,7 @@ function OrdersPage() {
                               </button>
                               <button
                                 className="action-btn cancel-btn"
-                                onClick={() => handleStatusUpdate(order.pedido_id, "cancelado")}
+                                onClick={() => handleCancelar(order.pedido_id)}
                               >
                                 <FaBan /> Cancelar
                               </button>
@@ -625,10 +715,28 @@ function OrdersPage() {
                           {order.status === "confirmado" && (
                             <>
                               <button
+                                className="action-btn transport-btn"
+                                onClick={() => handleStatusUpdate(order.pedido_id, "em_transporte")}
+                              >
+                                🚚 Em Transporte
+                              </button>
+                              <button
                                 className="action-btn cancel-btn"
-                                onClick={() => handleStatusUpdate(order.pedido_id, "cancelado")}
+                                onClick={() => handleCancelar(order.pedido_id)}
                               >
                                 <FaBan /> Cancelar
+                              </button>
+                            </>
+                          )}
+
+                          {/* Botões para pedidos com status "em_transporte" */}
+                          {order.status === "em_transporte" && (
+                            <>
+                              <button
+                                className="action-btn delivered-btn"
+                                onClick={() => handleStatusUpdate(order.pedido_id, "entregue")}
+                              >
+                                ✅ Marcar como Entregue
                               </button>
                             </>
                           )}
@@ -637,7 +745,7 @@ function OrdersPage() {
                           {order.status === "cancelado" && (
                             <button
                               className="action-btn confirm-btn"
-                              onClick={() => handleStatusUpdate(order.pedido_id, "confirmado")}
+                              onClick={() => handleStatusUpdate(order.pedido_id, "pendente")}
                             >
                               <FaCheck /> Reativar
                             </button>
@@ -678,25 +786,65 @@ function OrdersPage() {
                 
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="produto_pedido_id">Produto *</label>
+                    <label htmlFor="produto_id">Produto *</label>
                     <select
-                      id="produto_pedido_id"
-                      name="produto_pedido_id"
-                      value={formData.produto_pedido_id}
+                      id="produto_id"
+                      name="produto_id"
+                      value={formData.produto_id}
                       onChange={handleInputChange}
                       required
                       disabled={loadingProdutos}
                     >
                       <option value="">Selecione o produto</option>
-                      {produtosPedido.map(produto => (
-                        <option key={produto.produto_pedido_id} value={produto.produto_pedido_id}>
-                          {produto.nome} - {formatCurrency(produto.valor)}
-                        </option>
-                      ))}
+                      {produtos.map(produto => {
+                        // Verificar se o produto está disponível para a empresa selecionada
+                        const empresaSelecionadaId = parseInt(formData.empresa_id);
+                        let disponivel = true;
+                        let motivoIndisponivel = '';
+                        
+                        if (empresaSelecionadaId && produto.empresas_autorizadas && produto.empresas_autorizadas.length > 0) {
+                          disponivel = produto.empresas_autorizadas.includes(empresaSelecionadaId);
+                          if (!disponivel) {
+                            motivoIndisponivel = ' ⚠️ (Empresa não autorizada)';
+                          }
+                        }
+                        
+                        return (
+                          <option 
+                            key={produto.produto_id} 
+                            value={produto.produto_id}
+                            disabled={!disponivel}
+                            style={{ color: disponivel ? 'inherit' : '#cbd5e0' }}
+                          >
+                            {produto.nome} - {formatCurrency(produto.valor)} {produto.menu ? `(${produto.menu})` : ''}{motivoIndisponivel}
+                          </option>
+                        );
+                      })}
                     </select>
                     {loadingProdutos && <p className="loading-text">Carregando produtos...</p>}
+                    {formData.empresa_id && (
+                      <p className="info-text">
+                        💡 Produtos marcados com ⚠️ não estão disponíveis para a empresa selecionada
+                      </p>
+                    )}
                   </div>
 
+                  <div className="form-group">
+                    <label htmlFor="quantidade">Quantidade *</label>
+                    <input
+                      type="number"
+                      id="quantidade"
+                      name="quantidade"
+                      value={formData.quantidade}
+                      onChange={handleInputChange}
+                      required
+                      min="1"
+                      step="1"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row">
                   <div className="form-group">
                     <label htmlFor="cliente_id">Cliente *</label>
                     <select
@@ -705,7 +853,7 @@ function OrdersPage() {
                       value={formData.cliente_id}
                       onChange={handleInputChange}
                       required
-                      disabled={loadingClientes}
+                      disabled={loadingUsuarios || usuarioLogado?.role === "cliente"}
                     >
                       <option value="">Selecione o cliente</option>
                       {clientes.map(cliente => (
@@ -714,7 +862,33 @@ function OrdersPage() {
                         </option>
                       ))}
                     </select>
-                    {loadingClientes && <p className="loading-text">Carregando clientes...</p>}
+                    {usuarioLogado?.role === "cliente" && (
+                      <p className="info-text">Cliente definido automaticamente</p>
+                    )}
+                    {loadingUsuarios && <p className="loading-text">Carregando clientes...</p>}
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="empresa_id">Empresa *</label>
+                    <select
+                      id="empresa_id"
+                      name="empresa_id"
+                      value={formData.empresa_id}
+                      onChange={handleInputChange}
+                      required
+                      disabled={loadingUsuarios || usuarioLogado?.role === "empresa"}
+                    >
+                      <option value="">Selecione a empresa</option>
+                      {empresas.map(empresa => (
+                        <option key={empresa.usuario_id} value={empresa.usuario_id}>
+                          {empresa.nome} - {empresa.email}
+                        </option>
+                      ))}
+                    </select>
+                    {usuarioLogado?.role === "empresa" && (
+                      <p className="info-text">Empresa definida automaticamente</p>
+                    )}
+                    {loadingUsuarios && <p className="loading-text">Carregando empresas...</p>}
                   </div>
                 </div>
 
@@ -742,6 +916,8 @@ function OrdersPage() {
                     >
                       <option value="pendente">Pendente</option>
                       <option value="confirmado">Confirmado</option>
+                      <option value="em_transporte">Em Transporte</option>
+                      <option value="entregue">Entregue</option>
                       <option value="cancelado">Cancelado</option>
                     </select>
                   </div>
@@ -794,9 +970,9 @@ function OrdersPage() {
             </div>
 
             <div className="order-details-modal">
-              {pedidoEditando.items[0]?.foto && (
+              {pedidoEditando.produto_foto && (
                 <div className="detail-image">
-                  <img src={pedidoEditando.items[0].foto} alt={pedidoEditando.items[0].name} />
+                  <img src={pedidoEditando.produto_foto} alt={pedidoEditando.produto_nome} />
                 </div>
               )}
               
@@ -804,27 +980,26 @@ function OrdersPage() {
                 <div className="detail-group">
                   <h3>Informações do Pedido</h3>
                   <p><strong>ID:</strong> {pedidoEditando.id}</p>
-                  <p><strong>Total:</strong> {formatCurrency(pedidoEditando.total)}</p>
                   <p><strong>Status:</strong> 
                     <span className={`status-badge ${getStatusBadge(pedidoEditando.status).class}`}>
                       {getStatusBadge(pedidoEditando.status).label}
                     </span>
                   </p>
-                  {pedidoEditando.observacao && (
+                  <p><strong>Data/Hora Entrega:</strong> {formatDateTime(pedidoEditando.data_hora_entrega)}</p>
+                  {pedidoEditando.observacao && pedidoEditando.observacao !== "Sem observações" && (
                     <p><strong>Observações:</strong> {pedidoEditando.observacao}</p>
                   )}
                 </div>
 
                 <div className="detail-group">
-                  <h3>Produtos</h3>
-                  {pedidoEditando.items.map((item, index) => (
-                    <div key={index} className="product-detail">
-                      <p><strong>{item.name}</strong></p>
-                      <p>Quantidade: {item.quantity} | Valor: {formatCurrency(item.price)}</p>
-                      {item.categoria && <p>Categoria: {item.categoria}</p>}
-                      {item.descricao && <p>Descrição: {item.descricao}</p>}
-                    </div>
-                  ))}
+                  <h3>Produto</h3>
+                  <p><strong>Nome:</strong> {pedidoEditando.produto_nome}</p>
+                  <p><strong>Quantidade:</strong> {pedidoEditando.quantidade}</p>
+                  <p><strong>Valor Unitário:</strong> {formatCurrency(pedidoEditando.produto_valor)}</p>
+                  <p><strong>Valor Total:</strong> {formatCurrency(pedidoEditando.total)}</p>
+                  {pedidoEditando.produto_menu && (
+                    <p><strong>Menu:</strong> {pedidoEditando.produto_menu}</p>
+                  )}
                 </div>
 
                 <div className="detail-group">
@@ -835,8 +1010,14 @@ function OrdersPage() {
                 </div>
 
                 <div className="detail-group">
-                  <h3>Entrega</h3>
-                  <p><strong>Data/Hora:</strong> {formatDateTime(pedidoEditando.data_hora_entrega)}</p>
+                  <h3>Empresa</h3>
+                  <p><strong>Nome:</strong> {pedidoEditando.empresa_nome}</p>
+                  <p><strong>Email:</strong> {pedidoEditando.empresa_email}</p>
+                  <p><strong>Telefone:</strong> {pedidoEditando.empresa_telefone}</p>
+                </div>
+
+                <div className="detail-group">
+                  <h3>Datas</h3>
                   <p><strong>Cadastro:</strong> {formatDateTime(pedidoEditando.data_cadastro)}</p>
                   {pedidoEditando.data_update && (
                     <p><strong>Atualização:</strong> {formatDateTime(pedidoEditando.data_update)}</p>
@@ -886,6 +1067,7 @@ function OrdersPage() {
               <h3>Tem certeza que deseja excluir este pedido?</h3>
               <p><strong>{pedidoParaDeletar.id}</strong></p>
               <p><strong>Cliente:</strong> {pedidoParaDeletar.cliente}</p>
+              <p><strong>Produto:</strong> {pedidoParaDeletar.produto_nome}</p>
               <p><strong>Total:</strong> {formatCurrency(pedidoParaDeletar.total)}</p>
               <p className="warning-text">Esta ação não pode ser desfeita!</p>
             </div>

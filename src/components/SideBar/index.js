@@ -53,10 +53,6 @@ export default function SideBar() {
             Pedidos
           </Link>
 
-          <Link to="/agendamentos" onClick={closeMobileMenu}>
-            Agendamentos
-          </Link>
-
           {/* <Link to="/indicacoes" onClick={closeMobileMenu}>
             Indicações
           </Link> */}
