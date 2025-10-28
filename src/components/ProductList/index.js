@@ -5,7 +5,6 @@ import { usePlataforma } from "../../context/PlataformaContext";
 import "./styles.css";
 import { ToastContainer, toast } from 'react-toastify';
 import { Link, useNavigate } from "react-router-dom";
-import SideBar from "../SideBar/index";
 
 function ProductListAdmin() {
   const [produtos, setProdutos] = useState([]);
@@ -280,14 +279,9 @@ function ProductListAdmin() {
   // Loading do contexto
   if (contextLoading) {
     return (
-      <div className="container">
-        <SideBar />
-        <div className="main-content">
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-            <p>Carregando...</p>
-          </div>
-        </div>
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Carregando...</p>
       </div>
     );
   }
@@ -295,38 +289,25 @@ function ProductListAdmin() {
   // Verificação de autenticação
   if (!isAuthenticated()) {
     return (
-      <div className="container">
-        {/* <SideBar /> */}
-        <div className="main-content">
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-            <p>Redirecionando para login...</p>
-          </div>
-        </div>
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Redirecionando para login...</p>
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="container">
-        {/* <SideBar /> */}
-        <div className="main-content">
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-            <p>Carregando produtos...</p>
-          </div>
-        </div>
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Carregando produtos...</p>
       </div>
     );
   }
 
   return (
-    <div className="container">
-      {/* <SideBar /> */}
-      <div className="main-content">
-        <div className="product-admin-container">
-          <ToastContainer />
+    <div className="product-admin-container">
+      <ToastContainer />
           
           {/* Header */}
           <div className="product-admin-header">
@@ -413,7 +394,7 @@ function ProductListAdmin() {
                 <div className="table-body">
                   {produtos.map((produto) => (
                     <div key={produto.id} className="table-row">
-                      <div className="table-col photo">
+                      <div className="table-col photo" data-label="Foto">
                         <img 
                           src={produto.imageData || produto.foto_principal} 
                           alt={produto.nome}
@@ -448,32 +429,32 @@ function ProductListAdmin() {
                         )}
                       </div>
                       
-                      <div className="table-col name">
+                      <div className="table-col name" data-label="Produto">
                         <div className="product-name">{produto.nome}</div>
                         <div className="product-id">ID: {produto.id}</div>
                       </div>
                       
-                      <div className="table-col price">
+                      <div className="table-col price" data-label="Preço">
                         <span className="price-value">{formatCurrency(produto.valor)}</span>
                       </div>
                       
-                      <div className="table-col cost">
+                      <div className="table-col cost" data-label="Custo">
                         <span className="cost-value">{formatCurrency(produto.valor_custo)}</span>
                       </div>
                       
-                      <div className="table-col stock">
+                      <div className="table-col stock" data-label="Estoque">
                         <div className="stock-quantity">{produto.quantidade} unidades</div>
                       </div>
                       
-                      <div className="table-col category">
+                      <div className="table-col category" data-label="Categoria">
                         <span className="category-tag">{produto.tipo_produto}</span>
                       </div>
                       
-                      <div className="table-col type">
+                      <div className="table-col type" data-label="Tipo Venda">
                         <span className="type-badge">{produto.tipo_comercializacao}</span>
                       </div>
                       
-                      <div className="table-col actions">
+                      <div className="table-col actions" data-label="Ações">
                         <button 
                           className="action-btn edit-btn"
                           title="Editar produto"
@@ -495,11 +476,9 @@ function ProductListAdmin() {
               </div>
             )}
           </div>
-        </div>
-      </div>
 
-      {/* Modal de Filtros */}
-      {showFilterModal && (
+          {/* Modal de Filtros */}
+          {showFilterModal && (
         <div className="modal-overlay">
           <div className="modal-content filter-modal">
             <div className="modal-header">

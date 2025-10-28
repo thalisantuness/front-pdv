@@ -19,6 +19,8 @@ function FormRegister({ productId }) {
     quantidade: '',
     tipo_comercializacao: 'Venda',
     tipo_produto: 'Eletrônico',
+    menu: '',
+    empresas_autorizadas: [],
     foto_principal: ''
   });
 
@@ -30,18 +32,39 @@ function FormRegister({ productId }) {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [deletingPhoto, setDeletingPhoto] = useState(null);
   const [isEditing, setIsEditing] = useState(!!(id || productId));
+  const [empresas, setEmpresas] = useState([]);
+  const [loadingEmpresas, setLoadingEmpresas] = useState(false);
   const fileInputRef = useRef(null);
   const secondaryPhotosInputRef = useRef(null);
 
   // URL da API
   const API_URL = "https://back-pdv-production.up.railway.app/produtos";
+  const USUARIOS_API_URL = "https://back-pdv-production.up.railway.app/usuarios";
 
-  // Carrega dados do produto se estiver editando
+  // Carrega dados do produto se estiver editando e empresas
   useEffect(() => {
     if (isEditing && produtoId) {
       fetchProductData();
     }
+    carregarEmpresas();
   }, [isEditing, produtoId]);
+
+  const carregarEmpresas = async () => {
+    try {
+      setLoadingEmpresas(true);
+      const response = await axios.get(USUARIOS_API_URL, {
+        headers: getAuthHeaders()
+      });
+      
+      const empresasFiltradas = response.data.filter(usuario => usuario.role === "empresa");
+      setEmpresas(empresasFiltradas);
+    } catch (error) {
+      console.error("Erro ao carregar empresas:", error);
+      toast.error("Erro ao carregar lista de empresas!");
+    } finally {
+      setLoadingEmpresas(false);
+    }
+  };
 
   const fetchProductData = async () => {
     try {
@@ -58,6 +81,8 @@ function FormRegister({ productId }) {
         quantidade: produto.quantidade || '',
         tipo_comercializacao: produto.tipo_comercializacao || 'Venda',
         tipo_produto: produto.tipo_produto || 'Eletrônico',
+        menu: produto.menu || '',
+        empresas_autorizadas: produto.empresas_autorizadas || [],
         foto_principal: produto.foto_principal || ''
       });
 
@@ -86,6 +111,17 @@ function FormRegister({ productId }) {
   const handleNumberChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value === '' ? '' : Number(value) });
+  };
+
+  const handleEmpresasChange = (e) => {
+    const options = e.target.options;
+    const selected = [];
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].selected) {
+        selected.push(Number(options[i].value));
+      }
+    }
+    setFormData({ ...formData, empresas_autorizadas: selected });
   };
 
   const handleMainImageUpload = (e) => {
@@ -128,6 +164,8 @@ function FormRegister({ productId }) {
         quantidade: Number(formData.quantidade),
         tipo_comercializacao: formData.tipo_comercializacao,
         tipo_produto: formData.tipo_produto,
+        menu: formData.menu || null,
+        empresas_autorizadas: formData.empresas_autorizadas.length > 0 ? formData.empresas_autorizadas : null,
         foto_principal: formData.foto_principal || ""
       };
 
@@ -342,16 +380,65 @@ function FormRegister({ productId }) {
           </div>
         </div>
         
+        {/* Seção de menu */}
+        <div className="form-section">
+          <h3>Canal de Vendas e Autorizações</h3>
+          <div className="form-grid">
+            <div className="form-group">
+              <label>Disponível em</label>
+              <select
+                name="menu"
+                value={formData.menu}
+                onChange={handleChange}
+                disabled={loading}
+              >
+                <option value="">Selecione um canal (opcional)</option>
+                <option value="ecommerce">E-commerce</option>
+                <option value="varejo">Varejo</option>
+                <option value="ambos">Ambos</option>
+              </select>
+              <small className="field-hint">
+                Define em qual canal este produto estará disponível. Deixe em branco para disponibilizar em todos os canais.
+              </small>
+            </div>
+            
+            <div className="form-group">
+              <label>Empresas Autorizadas (Ctrl/Cmd + Clique para selecionar múltiplas)</label>
+              <select
+                multiple
+                value={formData.empresas_autorizadas}
+                onChange={handleEmpresasChange}
+                disabled={loading || loadingEmpresas}
+                style={{ minHeight: '120px' }}
+              >
+                {loadingEmpresas ? (
+                  <option disabled>Carregando empresas...</option>
+                ) : empresas.length === 0 ? (
+                  <option disabled>Nenhuma empresa cadastrada</option>
+                ) : (
+                  empresas.map(empresa => (
+                    <option key={empresa.usuario_id} value={empresa.usuario_id}>
+                      {empresa.nome} ({empresa.email})
+                    </option>
+                  ))
+                )}
+              </select>
+              <small className="field-hint">
+                Selecione as empresas que podem usar este produto. Deixe em branco para permitir todas as empresas. Use Ctrl/Cmd + Clique para selecionar múltiplas.
+              </small>
+            </div>
+          </div>
+        </div>
+        
         {/* Seção de imagem principal */}
         <div className="form-section">
-          <h3>Imagem Principal</h3>
+          <h3>Imagem Principal (Opcional)</h3>
           <div className="form-group">
             <label className="file-upload-label">
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleMainImageUpload}
-                required={!isEditing}
                 disabled={loading}
               />
               <span className="file-upload-button">

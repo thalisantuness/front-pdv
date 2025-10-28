@@ -10,7 +10,6 @@ function ImovelListPage() {
       <SideBar />
       <div className="main-content">
         <ImovelList />
-
         <Footer />
       </div>
     </div>

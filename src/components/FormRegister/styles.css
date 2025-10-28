@@ -97,6 +97,15 @@
   box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
 }
 
+/* Hint text */
+.field-hint {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #718096;
+  font-style: italic;
+}
+
 /* Upload de arquivos */
 .file-upload-label {
   display: flex;

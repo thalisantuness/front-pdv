@@ -7,6 +7,9 @@
   padding: 2.5rem;
   background: linear-gradient(135deg, #f5f7fa 0%, #f0f3f7 100%);
   min-height: calc(100vh - 100px);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* ==================== HEADER ==================== */
@@ -626,69 +629,177 @@
 /* ==================== AÇÕES DO PEDIDO ==================== */
 .order-actions {
   display: flex;
-  gap: 0.75rem;
+  gap: 1rem;
   justify-content: flex-end;
-  padding-top: 1.5rem;
-  border-top: 2px solid #f7fafc;
+  align-items: center;
+  padding-top: 1.75rem;
+  margin-top: 1.5rem;
+  border-top: 2px solid #e2e8f0;
   flex-wrap: wrap;
+  animation: fadeInUp 0.3s ease;
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==================== BOTÕES DE AÇÃO MELHORADOS ==================== */
 .action-btn {
-  padding: 0.75rem 1.5rem;
+  padding: 0.875rem 1.75rem;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  justify-content: center;
+  gap: 0.65rem;
+  position: relative;
+  overflow: hidden;
+  text-transform: capitalize;
+  letter-spacing: 0.3px;
+  min-width: 120px;
+}
+
+/* Efeito de brilho no hover */
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.action-btn:hover::before {
+  left: 100%;
 }
 
 .action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px) scale(1.02);
 }
 
 .action-btn:active {
-  transform: translateY(0);
+  transform: translateY(-1px) scale(0.98);
 }
 
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Ícones dos botões */
+.action-btn svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.3s ease;
+}
+
+.action-btn:hover svg {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* ==================== BOTÕES ESPECÍFICOS ==================== */
+
+/* Detalhes */
 .details-btn {
   background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
   color: white;
+  box-shadow: 0 4px 15px rgba(66, 153, 225, 0.3);
 }
 
+.details-btn:hover {
+  box-shadow: 0 6px 25px rgba(66, 153, 225, 0.45);
+  background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+}
+
+/* Editar */
 .edit-btn {
   background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%);
   color: white;
+  box-shadow: 0 4px 15px rgba(159, 122, 234, 0.3);
 }
 
+.edit-btn:hover {
+  box-shadow: 0 6px 25px rgba(159, 122, 234, 0.45);
+  background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%);
+}
+
+/* Confirmar */
 .confirm-btn {
   background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
   color: white;
+  box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
 }
 
+.confirm-btn:hover {
+  box-shadow: 0 6px 25px rgba(72, 187, 120, 0.45);
+  background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+}
+
+/* Cancelar */
 .cancel-btn {
   background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
   color: white;
+  box-shadow: 0 4px 15px rgba(252, 129, 129, 0.3);
 }
 
+.cancel-btn:hover {
+  box-shadow: 0 6px 25px rgba(252, 129, 129, 0.45);
+  background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+}
+
+/* Em Transporte */
 .transport-btn {
   background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
   color: white;
+  box-shadow: 0 4px 15px rgba(237, 137, 54, 0.3);
 }
 
+.transport-btn:hover {
+  box-shadow: 0 6px 25px rgba(237, 137, 54, 0.45);
+  background: linear-gradient(135deg, #dd6b20 0%, #c05621 100%);
+}
+
+/* Entregue */
 .delivered-btn {
   background: linear-gradient(135deg, #38b2ac 0%, #319795 100%);
   color: white;
+  box-shadow: 0 4px 15px rgba(56, 178, 172, 0.3);
 }
 
+.delivered-btn:hover {
+  box-shadow: 0 6px 25px rgba(56, 178, 172, 0.45);
+  background: linear-gradient(135deg, #319795 0%, #2c7a7b 100%);
+}
+
+/* Excluir */
 .delete-btn {
   background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
   color: white;
+  box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3);
+}
+
+.delete-btn:hover {
+  box-shadow: 0 6px 25px rgba(229, 62, 62, 0.45);
+  background: linear-gradient(135deg, #c53030 0%, #9b2c2c 100%);
 }
 
 /* ==================== MODAIS ==================== */
