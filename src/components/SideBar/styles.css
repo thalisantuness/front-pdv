@@ -63,6 +63,22 @@
   transform: translateX(5px);
 }
 
+.logout-btn {
+  color: #ffffff;
+  padding: 12px 20px;
+  width: 80%;
+  text-align: center;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  background: #e53e3e;
+}
+
+.logout-btn:hover {
+  background: #c53030;
+  transform: translateX(5px);
+}
+
 /* Para garantir que o conteúdo principal não fique atrás do sidebar */
 .main-content {
   margin-left: 250px;

@@ -14,6 +14,7 @@ import ProtectRoute from "./components/ProtectRoute"; // Corrigi para usar apena
 import EditImovel from "./pages/edit-product-admin";
 import OrdersPage from "./pages/orders";
 import ReferralsPage from "./pages/referrals";
+import ProfilePage from "./pages/profile";
 
 function App() {
   return (
@@ -92,6 +93,15 @@ function App() {
               element={
                 <ProtectRoute>
                   <UserListAdmin />
+                </ProtectRoute>
+              }
+            />
+
+            <Route
+              path="/meu-perfil"
+              element={
+                <ProtectRoute>
+                  <ProfilePage />
                 </ProtectRoute>
               }
             />

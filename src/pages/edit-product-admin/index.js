@@ -31,16 +31,13 @@ function EditImovel() {
   const [updating, setUpdating] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [deletingPhoto, setDeletingPhoto] = useState(null);
-  const [empresas, setEmpresas] = useState([]);
-  const [loadingEmpresas, setLoadingEmpresas] = useState(false);
   const fileInputRef = useRef(null);
   const secondaryPhotosInputRef = useRef(null);
 
   // URL da API
   const API_URL = "https://back-pdv-production.up.railway.app/produtos";
-  const USUARIOS_API_URL = "https://back-pdv-production.up.railway.app/usuarios";
 
-  // Carrega dados do produto e empresas
+  // Carrega dados do produto
   useEffect(() => {
     if (!isAuthenticated()) {
       toast.error('Usuário não autenticado!');
@@ -49,25 +46,7 @@ function EditImovel() {
     }
 
     fetchProductData();
-    carregarEmpresas();
   }, [id, isAuthenticated, navigate]);
-
-  const carregarEmpresas = async () => {
-    try {
-      setLoadingEmpresas(true);
-      const response = await axios.get(USUARIOS_API_URL, {
-        headers: getAuthHeaders()
-      });
-      
-      const empresasFiltradas = response.data.filter(usuario => usuario.role === "empresa");
-      setEmpresas(empresasFiltradas);
-    } catch (error) {
-      console.error("Erro ao carregar empresas:", error);
-      toast.error("Erro ao carregar lista de empresas!");
-    } finally {
-      setLoadingEmpresas(false);
-    }
-  };
 
   const fetchProductData = async () => {
     try {
@@ -88,7 +67,8 @@ function EditImovel() {
         tipo_produto: produto.tipo_produto || 'Eletrônico',
         menu: produto.menu || '',
         empresas_autorizadas: produto.empresas_autorizadas || [],
-        foto_principal: produto.foto_principal || ''
+        // Usa foto_principal ou, se vier via imageData, usa imageData
+        foto_principal: produto.foto_principal || produto.imageData || ''
       });
 
       // Carrega fotos secundárias
@@ -118,16 +98,6 @@ function EditImovel() {
     setFormData({ ...formData, [name]: value === '' ? '' : Number(value) });
   };
 
-  const handleEmpresasChange = (e) => {
-    const options = e.target.options;
-    const selected = [];
-    for (let i = 0; i < options.length; i++) {
-      if (options[i].selected) {
-        selected.push(Number(options[i].value));
-      }
-    }
-    setFormData({ ...formData, empresas_autorizadas: selected });
-  };
 
   const handleMainImageUpload = (e) => {
     const file = e.target.files[0];
@@ -171,8 +141,13 @@ function EditImovel() {
         tipo_produto: formData.tipo_produto,
         menu: formData.menu || null,
         empresas_autorizadas: formData.empresas_autorizadas.length > 0 ? formData.empresas_autorizadas : null,
-        foto_principal: formData.foto_principal || ""
+        foto_principal: formData.foto_principal || undefined
       };
+
+      // Se a foto principal não foi alterada (string vazia/undefined), remove o campo
+      if (!formData.foto_principal) {
+        delete payload.foto_principal;
+      }
 
       await axios.put(`${API_URL}/${id}`, payload, {
         headers: getAuthHeaders()
@@ -182,6 +157,11 @@ function EditImovel() {
         position: 'top-right',
         autoClose: 3000,
       });
+      
+      // Navegar para a listagem de produtos após atualização
+      setTimeout(() => {
+        navigate('/produtos');
+      }, 1000); // Aguarda 1 segundo para o usuário ver a mensagem de sucesso
       
     } catch (error) {
       console.error('Erro ao atualizar produto:', error);
@@ -231,8 +211,12 @@ function EditImovel() {
   const removeSecondaryPhoto = async (photoId) => {
     setDeletingPhoto(photoId);
     try {
-      // Nota: Você precisará implementar um endpoint para deletar fotos secundárias
-      // Por enquanto, vamos apenas remover da lista local
+      // Chamar a API para deletar a foto no backend
+      await axios.delete(`${API_URL}/${id}/fotos/${photoId}`, {
+        headers: getAuthHeaders()
+      });
+      
+      // Remover da lista local apenas após sucesso na API
       setPhotos(photos.filter(photo => photo.photo_id !== photoId));
       
       toast.success('Foto removida com sucesso!', {
@@ -241,12 +225,14 @@ function EditImovel() {
       });
     } catch (error) {
       console.error('Erro ao remover foto:', error);
-      toast.error('Erro ao remover foto!', {
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Erro ao remover foto!';
+      toast.error(errorMessage, {
         position: 'top-right',
         autoClose: 3000,
       });
+    } finally {
+      setDeletingPhoto(null);
     }
-    setDeletingPhoto(null);
   };
 
   const handleBack = () => {
@@ -380,6 +366,7 @@ function EditImovel() {
                     <option value="Venda">Venda</option>
                     <option value="Aluguel">Aluguel</option>
                     <option value="Serviço">Serviço</option>
+                    <option value="Dropshipping">Dropshipping</option>
                   </select>
                 </div>
               </div>
@@ -404,32 +391,6 @@ function EditImovel() {
                   </select>
                   <small className="field-hint">
                     Define em qual canal este produto estará disponível. Deixe em branco para disponibilizar em todos os canais.
-                  </small>
-                </div>
-                
-                <div className="form-group">
-                  <label>Empresas Autorizadas (Ctrl/Cmd + Clique para selecionar múltiplas)</label>
-                  <select
-                    multiple
-                    value={formData.empresas_autorizadas}
-                    onChange={handleEmpresasChange}
-                    disabled={updating || loadingEmpresas}
-                    style={{ minHeight: '120px' }}
-                  >
-                    {loadingEmpresas ? (
-                      <option disabled>Carregando empresas...</option>
-                    ) : empresas.length === 0 ? (
-                      <option disabled>Nenhuma empresa cadastrada</option>
-                    ) : (
-                      empresas.map(empresa => (
-                        <option key={empresa.usuario_id} value={empresa.usuario_id}>
-                          {empresa.nome} ({empresa.email})
-                        </option>
-                      ))
-                    )}
-                  </select>
-                  <small className="field-hint">
-                    Selecione as empresas que podem usar este produto. Deixe em branco para permitir todas as empresas. Use Ctrl/Cmd + Clique para selecionar múltiplas.
                   </small>
                 </div>
               </div>

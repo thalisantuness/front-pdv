@@ -55,37 +55,42 @@ function OrdersPage() {
         headers: getAuthHeaders()
       });
 
-      const pedidosMapeados = response.data.map(pedido => ({
-        id: `ORD-${String(pedido.pedido_id).padStart(3, '0')}`,
-        pedido_id: pedido.pedido_id,
-        produto_id: pedido.produto_id,
-        quantidade: pedido.quantidade || 1,
-        // Informações do Cliente
-        cliente_id: pedido.cliente_id,
-        cliente: pedido.Cliente?.nome || "Cliente não informado",
-        cliente_email: pedido.Cliente?.email || "-",
-        cliente_telefone: pedido.Cliente?.telefone || "-",
-        cliente_role: pedido.Cliente?.role || "-",
-        // Informações da Empresa
-        empresa_id: pedido.empresa_id,
-        empresa_nome: pedido.Empresa?.nome || "Empresa não informada",
-        empresa_email: pedido.Empresa?.email || "-",
-        empresa_telefone: pedido.Empresa?.telefone || "-",
-        empresa_role: pedido.Empresa?.role || "-",
-        // Informações do Produto
-        produto_nome: pedido.Produto?.nome || "Produto não informado",
-        produto_valor: pedido.Produto?.valor || 0,
-        produto_foto: pedido.Produto?.foto_principal,
-        produto_menu: pedido.Produto?.menu,
-        // Calcular total
-        total: (pedido.Produto?.valor || 0) * (pedido.quantidade || 1),
-        // Outras informações
-        status: pedido.status,
-        data_hora_entrega: pedido.data_hora_entrega,
-        observacao: pedido.observacao || "Sem observações",
-        data_cadastro: pedido.data_cadastro,
-        data_update: pedido.data_update
-      }));
+      const pedidosMapeados = response.data.map(pedido => {
+        // Tratar caso onde Produto é null
+        const produto = pedido.Produto || null;
+        
+        return {
+          id: `ORD-${String(pedido.pedido_id).padStart(3, '0')}`,
+          pedido_id: pedido.pedido_id,
+          produto_id: pedido.produto_id,
+          quantidade: pedido.quantidade || 1,
+          // Informações do Cliente
+          cliente_id: pedido.cliente_id,
+          cliente: pedido.Cliente?.nome || "Cliente não informado",
+          cliente_email: pedido.Cliente?.email || "-",
+          cliente_telefone: pedido.Cliente?.telefone || "-",
+          cliente_role: pedido.Cliente?.role || "-",
+          // Informações da Empresa
+          empresa_id: pedido.empresa_id,
+          empresa_nome: pedido.Empresa?.nome || "Empresa não informada",
+          empresa_email: pedido.Empresa?.email || "-",
+          empresa_telefone: pedido.Empresa?.telefone || "-",
+          empresa_role: pedido.Empresa?.role || "-",
+          // Informações do Produto (com verificação de null)
+          produto_nome: produto?.nome || "Produto não informado",
+          produto_valor: produto?.valor || 0,
+          produto_foto: produto?.foto_principal || null,
+          produto_menu: produto?.menu || null,
+          // Calcular total
+          total: (produto?.valor || 0) * (pedido.quantidade || 1),
+          // Outras informações
+          status: pedido.status,
+          data_hora_entrega: pedido.data_hora_entrega,
+          observacao: pedido.observacao || "Sem observações",
+          data_cadastro: pedido.data_cadastro,
+          data_update: pedido.data_update
+        };
+      });
 
       setOrders(pedidosMapeados);
     } catch (error) {
@@ -156,26 +161,31 @@ function OrdersPage() {
     
     // Faturamento realizado (pedidos confirmados e entregues)
     const faturamentoRealizado = orders
-      .filter(o => o.status === 'confirmado' || o.status === 'entregue')
-      .reduce((total, o) => total + o.total, 0);
+      .filter(o => o && (o.status === 'confirmado' || o.status === 'entregue'))
+      .reduce((total, o) => total + (o.total || 0), 0);
     
     // Previsão de faturamento (pedidos pendentes e em transporte)
     const previsaoFaturamento = orders
-      .filter(o => o.status === 'pendente' || o.status === 'em_transporte')
-      .reduce((total, o) => total + o.total, 0);
+      .filter(o => o && (o.status === 'pendente' || o.status === 'em_transporte'))
+      .reduce((total, o) => total + (o.total || 0), 0);
     
-    // Pedidos de hoje
-    const pedidosHoje = orders.filter(o => 
-      o.data_hora_entrega.split('T')[0] === hoje
-    );
+    // Pedidos de hoje (com verificação de data_hora_entrega)
+    const pedidosHoje = orders.filter(o => {
+      if (!o || !o.data_hora_entrega) return false;
+      try {
+        return o.data_hora_entrega.split('T')[0] === hoje;
+      } catch {
+        return false;
+      }
+    });
     
     const faturamentoHoje = pedidosHoje
-      .filter(o => o.status === 'confirmado' || o.status === 'entregue')
-      .reduce((total, o) => total + o.total, 0);
+      .filter(o => o && (o.status === 'confirmado' || o.status === 'entregue'))
+      .reduce((total, o) => total + (o.total || 0), 0);
     
     const previsaoHoje = pedidosHoje
-      .filter(o => o.status === 'pendente' || o.status === 'em_transporte')
-      .reduce((total, o) => total + o.total, 0);
+      .filter(o => o && (o.status === 'pendente' || o.status === 'em_transporte'))
+      .reduce((total, o) => total + (o.total || 0), 0);
 
     return {
       faturamentoRealizado,
@@ -195,10 +205,12 @@ function OrdersPage() {
   const estatisticas = calcularEstatisticas();
 
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.cliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.produto_nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.empresa_nome.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch = 
+      (order.cliente || "").toLowerCase().includes(searchLower) ||
+      (order.id || "").toLowerCase().includes(searchLower) ||
+      (order.produto_nome || "").toLowerCase().includes(searchLower) ||
+      (order.empresa_nome || "").toLowerCase().includes(searchLower);
     
     if (filter === "all") return matchesSearch;
     return order.status === filter && matchesSearch;

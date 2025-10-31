@@ -531,6 +531,7 @@ function ProductListAdmin() {
                   <option value="Venda">Venda</option>
                   <option value="Aluguel">Aluguel</option>
                   <option value="Serviço">Serviço</option>
+                  <option value="Dropshipping">Dropshipping</option>
                 </select>
               </div>
 

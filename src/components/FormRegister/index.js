@@ -29,44 +29,31 @@ function FormRegister({ productId }) {
   const [produtoId, setProdutoId] = useState(id || productId || null);
   const [photos, setPhotos] = useState([]);
   const [newPhoto, setNewPhoto] = useState(null);
+  const [pendingPhotos, setPendingPhotos] = useState([]); // Fotos aguardando produto ser criado
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [deletingPhoto, setDeletingPhoto] = useState(null);
   const [isEditing, setIsEditing] = useState(!!(id || productId));
-  const [empresas, setEmpresas] = useState([]);
-  const [loadingEmpresas, setLoadingEmpresas] = useState(false);
   const fileInputRef = useRef(null);
   const secondaryPhotosInputRef = useRef(null);
 
   // URL da API
   const API_URL = "https://back-pdv-production.up.railway.app/produtos";
-  const USUARIOS_API_URL = "https://back-pdv-production.up.railway.app/usuarios";
 
-  // Carrega dados do produto se estiver editando e empresas
+  // Carrega dados do produto se estiver editando (não ao criar, pois navega logo em seguida)
   useEffect(() => {
-    if (isEditing && produtoId) {
+    // Só carrega se estiver editando um produto existente (não após criar um novo)
+    if (isEditing && produtoId && id) {
       fetchProductData();
     }
-    carregarEmpresas();
-  }, [isEditing, produtoId]);
-
-  const carregarEmpresas = async () => {
-    try {
-      setLoadingEmpresas(true);
-      const response = await axios.get(USUARIOS_API_URL, {
-        headers: getAuthHeaders()
-      });
-      
-      const empresasFiltradas = response.data.filter(usuario => usuario.role === "empresa");
-      setEmpresas(empresasFiltradas);
-    } catch (error) {
-      console.error("Erro ao carregar empresas:", error);
-      toast.error("Erro ao carregar lista de empresas!");
-    } finally {
-      setLoadingEmpresas(false);
-    }
-  };
+  }, [id]); // Depende apenas do id da URL (produto existente)
 
   const fetchProductData = async () => {
+    // Validação: não faz requisição se produtoId não existe ou é null
+    if (!produtoId) {
+      console.warn('fetchProductData chamado sem produtoId');
+      return;
+    }
+    
     try {
       setLoading(true);
       const response = await axios.get(`${API_URL}/${produtoId}`, {
@@ -83,7 +70,8 @@ function FormRegister({ productId }) {
         tipo_produto: produto.tipo_produto || 'Eletrônico',
         menu: produto.menu || '',
         empresas_autorizadas: produto.empresas_autorizadas || [],
-        foto_principal: produto.foto_principal || ''
+        // Usa foto_principal ou imageData retornado pela API
+        foto_principal: produto.foto_principal || produto.imageData || ''
       });
 
       // Carrega fotos secundárias
@@ -113,16 +101,6 @@ function FormRegister({ productId }) {
     setFormData({ ...formData, [name]: value === '' ? '' : Number(value) });
   };
 
-  const handleEmpresasChange = (e) => {
-    const options = e.target.options;
-    const selected = [];
-    for (let i = 0; i < options.length; i++) {
-      if (options[i].selected) {
-        selected.push(Number(options[i].value));
-      }
-    }
-    setFormData({ ...formData, empresas_autorizadas: selected });
-  };
 
   const handleMainImageUpload = (e) => {
     const file = e.target.files[0];
@@ -166,8 +144,18 @@ function FormRegister({ productId }) {
         tipo_produto: formData.tipo_produto,
         menu: formData.menu || null,
         empresas_autorizadas: formData.empresas_autorizadas.length > 0 ? formData.empresas_autorizadas : null,
-        foto_principal: formData.foto_principal || ""
+        foto_principal: formData.foto_principal || undefined
       };
+
+      // Ao editar, se a foto principal não foi alterada, não envia o campo para não sobrescrever no backend
+      if (isEditing && !formData.foto_principal) {
+        delete payload.foto_principal;
+      }
+
+      // Ao criar novo produto, inclui fotos secundárias no payload se houver
+      if (!isEditing && pendingPhotos.length > 0) {
+        payload.fotos_secundarias = pendingPhotos;
+      }
 
       let response;
       if (isEditing && produtoId) {
@@ -184,13 +172,28 @@ function FormRegister({ productId }) {
         response = await axios.post(API_URL, payload, {
           headers: getAuthHeaders()
         });
-        const id = response.data.produto_id;
-        setProdutoId(id);
-        setIsEditing(true);
-        toast.success('Produto cadastrado com sucesso!', {
-          position: 'top-right',
-          autoClose: 3000,
-        });
+        // Verifica se havia fotos secundárias antes de limpar
+        const tinhaFotosSecundarias = pendingPhotos.length > 0;
+        
+        // Limpa fotos pendentes após criar (já foram enviadas no payload)
+        setPendingPhotos([]);
+        
+        if (tinhaFotosSecundarias) {
+          toast.success('Produto cadastrado com sucesso! Fotos secundárias adicionadas.', {
+            position: 'top-right',
+            autoClose: 3000,
+          });
+        } else {
+          toast.success('Produto cadastrado com sucesso!', {
+            position: 'top-right',
+            autoClose: 3000,
+          });
+        }
+        
+        // Navegar para a listagem de produtos após criar (não atualiza estado pois vai navegar)
+        setTimeout(() => {
+          navigate('/produtos');
+        }, 2000); // Aguarda 2s para o usuário ver a mensagem de sucesso
       }
       
     } catch (error) {
@@ -207,8 +210,23 @@ function FormRegister({ productId }) {
   };
 
   const addSecondaryPhoto = async () => {
-    if (!newPhoto || !produtoId) return;
+    if (!newPhoto) return;
     
+    // Se o produto ainda não foi criado, adiciona à lista de pendentes
+    if (!produtoId) {
+      setPendingPhotos([...pendingPhotos, newPhoto]);
+      setNewPhoto(null);
+      if (secondaryPhotosInputRef.current) {
+        secondaryPhotosInputRef.current.value = '';
+      }
+      toast.success('Foto adicionada! Será enviada junto com o produto ao salvar.', {
+        position: 'top-right',
+        autoClose: 2000,
+      });
+      return;
+    }
+    
+    // Se o produto já existe, envia para o backend
     setUploadingPhoto(true);
     try {
       await axios.post(
@@ -239,11 +257,21 @@ function FormRegister({ productId }) {
     setUploadingPhoto(false);
   };
 
+
   const removeSecondaryPhoto = async (photoId) => {
+    if (!produtoId) {
+      toast.error('ID do produto não encontrado!');
+      return;
+    }
+    
     setDeletingPhoto(photoId);
     try {
-      // Nota: Você precisará implementar um endpoint para deletar fotos secundárias
-      // Por enquanto, vamos apenas remover da lista local
+      // Chamar a API para deletar a foto no backend
+      await axios.delete(`${API_URL}/${produtoId}/fotos/${photoId}`, {
+        headers: getAuthHeaders()
+      });
+      
+      // Remover da lista local apenas após sucesso na API
       setPhotos(photos.filter(photo => photo.photo_id !== photoId));
       
       toast.success('Foto removida com sucesso!', {
@@ -252,12 +280,14 @@ function FormRegister({ productId }) {
       });
     } catch (error) {
       console.error('Erro ao remover foto:', error);
-      toast.error('Erro ao remover foto!', {
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Erro ao remover foto!';
+      toast.error(errorMessage, {
         position: 'top-right',
         autoClose: 3000,
       });
+    } finally {
+      setDeletingPhoto(null);
     }
-    setDeletingPhoto(null);
   };
 
   const handleBack = () => {
@@ -375,6 +405,7 @@ function FormRegister({ productId }) {
                 <option value="Venda">Venda</option>
                 <option value="Aluguel">Aluguel</option>
                 <option value="Serviço">Serviço</option>
+                <option value="Dropshipping">Dropshipping</option>
               </select>
             </div>
           </div>
@@ -399,32 +430,6 @@ function FormRegister({ productId }) {
               </select>
               <small className="field-hint">
                 Define em qual canal este produto estará disponível. Deixe em branco para disponibilizar em todos os canais.
-              </small>
-            </div>
-            
-            <div className="form-group">
-              <label>Empresas Autorizadas (Ctrl/Cmd + Clique para selecionar múltiplas)</label>
-              <select
-                multiple
-                value={formData.empresas_autorizadas}
-                onChange={handleEmpresasChange}
-                disabled={loading || loadingEmpresas}
-                style={{ minHeight: '120px' }}
-              >
-                {loadingEmpresas ? (
-                  <option disabled>Carregando empresas...</option>
-                ) : empresas.length === 0 ? (
-                  <option disabled>Nenhuma empresa cadastrada</option>
-                ) : (
-                  empresas.map(empresa => (
-                    <option key={empresa.usuario_id} value={empresa.usuario_id}>
-                      {empresa.nome} ({empresa.email})
-                    </option>
-                  ))
-                )}
-              </select>
-              <small className="field-hint">
-                Selecione as empresas que podem usar este produto. Deixe em branco para permitir todas as empresas. Use Ctrl/Cmd + Clique para selecionar múltiplas.
               </small>
             </div>
           </div>
@@ -476,38 +481,53 @@ function FormRegister({ productId }) {
         </div>
       </form>
 
-      {/* Seção de fotos secundárias (apenas quando editar) */}
-      {isEditing && produtoId && (
-        <div className="secondary-photos-section">
+      {/* Seção de fotos secundárias (sempre disponível) */}
+      <div className="secondary-photos-section">
           <div className="section-header">
             <h3>Fotos Secundárias do Produto</h3>
             <p>Adicione fotos adicionais para mostrar diferentes ângulos do produto</p>
           </div>
           
-          {/* Lista de fotos secundárias */}
-          {photos.length > 0 ? (
-            <div className="photos-grid">
-              {photos.map((photo) => (
-                <div key={photo.photo_id} className="photo-item">
-                  <img src={photo.imageData} alt={`Produto ${photo.photo_id}`} />
-                  <button
-                    onClick={() => removeSecondaryPhoto(photo.photo_id)}
-                    disabled={deletingPhoto === photo.photo_id}
-                    className="delete-photo"
-                    title="Remover foto"
-                  >
-                    {deletingPhoto === photo.photo_id ? (
-                      <FaSpinner className="spinner" />
-                    ) : (
+            {/* Lista de fotos secundárias */}
+            {(photos.length > 0 || pendingPhotos.length > 0) ? (
+              <div className="photos-grid">
+                {/* Mostra fotos pendentes (antes de criar produto) */}
+                {pendingPhotos.map((photo, index) => (
+                  <div key={`pending-${index}`} className="photo-item">
+                    <img src={photo} alt={`Foto pendente ${index + 1}`} />
+                    <button
+                      onClick={() => {
+                        setPendingPhotos(pendingPhotos.filter((_, i) => i !== index));
+                      }}
+                      className="delete-photo"
+                      title="Remover foto"
+                    >
                       <FaTrash />
-                    )}
-                  </button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="no-photos">Nenhuma foto secundária adicionada ainda.</p>
-          )}
+                    </button>
+                  </div>
+                ))}
+                {/* Mostra fotos já salvas (após criar produto) */}
+                {photos.map((photo) => (
+                  <div key={photo.photo_id} className="photo-item">
+                    <img src={photo.imageData} alt={`Produto ${photo.photo_id}`} />
+                    <button
+                      onClick={() => removeSecondaryPhoto(photo.photo_id)}
+                      disabled={deletingPhoto === photo.photo_id}
+                      className="delete-photo"
+                      title="Remover foto"
+                    >
+                      {deletingPhoto === photo.photo_id ? (
+                        <FaSpinner className="spinner" />
+                      ) : (
+                        <FaTrash />
+                      )}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="no-photos">Nenhuma foto secundária adicionada ainda.</p>
+            )}
           
           {/* Formulário para adicionar nova foto secundária */}
           <div className="add-photo-container">
@@ -533,7 +553,7 @@ function FormRegister({ productId }) {
                   </div>
                   <button
                     onClick={addSecondaryPhoto}
-                    disabled={uploadingPhoto}
+                    disabled={uploadingPhoto || loading}
                     className="add-photo-button"
                   >
                     {uploadingPhoto ? (
@@ -549,7 +569,6 @@ function FormRegister({ productId }) {
             </div>
           </div>
         </div>
-      )}
     </div>
   );
 }

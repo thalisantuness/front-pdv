@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { usePlataforma } from "../../context/PlataformaContext";
 import Logo from "../../assets/logo-transparente.png";
 import "./styles.css";
 
 export default function SideBar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const navigate = useNavigate();
+  const { logout } = usePlataforma();
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -28,6 +31,11 @@ export default function SideBar() {
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
   return (
     <>
       {/* Botão hamburger para mobile */}
@@ -39,7 +47,7 @@ export default function SideBar() {
 
       <header className={`navbar ${isMobileOpen ? "mobile-open" : ""}`}>
         <div className="logo-container">
-          <Link to="/" onClick={closeMobileMenu}>
+          <Link to="/home" onClick={closeMobileMenu}>
             <img src={Logo} className="logo-img" alt="Logo" />
           </Link>
         </div>
@@ -53,17 +61,17 @@ export default function SideBar() {
             Pedidos
           </Link>
 
-          {/* <Link to="/indicacoes" onClick={closeMobileMenu}>
-            Indicações
-          </Link> */}
+          <Link to="/meu-perfil" onClick={closeMobileMenu}>
+            Meu Perfil
+          </Link>
 
           <Link to="/usuarios" onClick={closeMobileMenu}>
             Usuários
           </Link>
 
-          {/* <Link to="/vender" onClick={closeMobileMenu}>
-            Vender
-          </Link> */}
+          <button className="logout-btn" onClick={handleLogout}>
+            Sair
+          </button>
         </div>
       </header>
     </>
