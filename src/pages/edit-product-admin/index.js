@@ -34,7 +34,6 @@ function EditImovel() {
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
-  const fileInputRef = useRef(null);
   const secondaryPhotosInputRef = useRef(null);
 
   // URL da API
@@ -99,6 +98,7 @@ function EditImovel() {
     }
 
     fetchProductData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isAuthenticated, navigate]);
 
   const fetchProductData = async () => {

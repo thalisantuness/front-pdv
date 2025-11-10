@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaTrash, FaEdit, FaPlus, FaUser, FaUserTie, FaUserShield, FaEnvelope, FaPhone, FaCalendar, FaSync, FaUserTag, FaBuilding, FaTimes, FaSave, FaExclamationTriangle } from "react-icons/fa";
+import { FaTrash, FaPlus, FaUser, FaUserTie, FaUserShield, FaEnvelope, FaPhone, FaCalendar, FaSync, FaUserTag, FaBuilding, FaTimes, FaSave, FaExclamationTriangle } from "react-icons/fa";
 import axios from "axios";
 import "./styles.css";
 import { ToastContainer, toast } from 'react-toastify';

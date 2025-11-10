@@ -26,18 +26,17 @@ function FormRegister({ productId }) {
 
   // Estados do componente
   const [loading, setLoading] = useState(false);
-  const [produtoId, setProdutoId] = useState(id || productId || null);
+  const [produtoId] = useState(id || productId || null);
   const [photos, setPhotos] = useState([]);
   const [newPhoto, setNewPhoto] = useState(null);
   const [pendingPhotos, setPendingPhotos] = useState([]); // Fotos aguardando produto ser criado
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [deletingPhoto, setDeletingPhoto] = useState(null);
-  const [isEditing, setIsEditing] = useState(!!(id || productId));
+  const [isEditing] = useState(!!(id || productId));
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
-  const fileInputRef = useRef(null);
   const secondaryPhotosInputRef = useRef(null);
 
   // URL da API
@@ -99,6 +98,7 @@ function FormRegister({ productId }) {
     if (isEditing && produtoId && id) {
       fetchProductData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]); // Depende apenas do id da URL (produto existente)
 
   const fetchProductData = async () => {
@@ -246,10 +246,9 @@ function FormRegister({ productId }) {
         payload.fotos_secundarias = pendingPhotos;
       }
 
-      let response;
       if (isEditing && produtoId) {
         // Edição de produto existente
-        response = await axios.put(`${API_URL}/${produtoId}`, payload, {
+        await axios.put(`${API_URL}/${produtoId}`, payload, {
           headers: getAuthHeaders()
         });
         toast.success('Produto atualizado com sucesso!', {
@@ -258,7 +257,7 @@ function FormRegister({ productId }) {
         });
       } else {
         // Cadastro de novo produto
-        response = await axios.post(API_URL, payload, {
+        await axios.post(API_URL, payload, {
           headers: getAuthHeaders()
         });
         // Verifica se havia fotos secundárias antes de limpar

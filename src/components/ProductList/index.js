@@ -1,30 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { FaTrash, FaEdit, FaPlus, FaBox, FaSync, FaTimes, FaExclamationTriangle, FaSave, FaFilter } from "react-icons/fa";
+import { FaTrash, FaPlus, FaBox, FaSync, FaTimes, FaExclamationTriangle } from "react-icons/fa";
 import axios from "axios";
 import { usePlataforma } from "../../context/PlataformaContext";
 import "./styles.css";
 import { ToastContainer, toast } from 'react-toastify';
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function ProductListAdmin() {
   const [produtos, setProdutos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPhotoDeleteModal, setShowPhotoDeleteModal] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [produtoToDelete, setProdutoToDelete] = useState(null);
   const [photoToDelete, setPhotoToDelete] = useState(null);
-  const [editingProduto, setEditingProduto] = useState(null);
-  const [formData, setFormData] = useState({
-    nome: "",
-    valor: "",
-    valor_custo: "",
-    quantidade: "",
-    tipo_comercializacao: "Venda",
-    tipo_produto: "Eletrônico",
-    foto_principal: ""
-  });
   const [filtros, setFiltros] = useState({
     nome: "",
     tipo_produto: "",
@@ -32,9 +21,8 @@ function ProductListAdmin() {
     quantidade_min: "",
     quantidade_max: ""
   });
-  const [formLoading, setFormLoading] = useState(false);
   
-  const { getAuthHeaders, isAuthenticated, loading: contextLoading, usuario: usuarioLogado } = usePlataforma();
+  const { getAuthHeaders, isAuthenticated, loading: contextLoading } = usePlataforma();
   const navigate = useNavigate();
 
   // URL da API
@@ -44,6 +32,7 @@ function ProductListAdmin() {
     if (!contextLoading) {
       fetchProdutos();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contextLoading]);
 
   const fetchProdutos = async (filtrosAplicados = {}) => {

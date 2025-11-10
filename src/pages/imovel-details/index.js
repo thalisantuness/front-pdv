@@ -56,6 +56,7 @@ function PDVVendas() {
     };
 
     fetchProdutos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -118,7 +119,6 @@ function PDVVendas() {
     }
 
     // Encontrar o produto para verificar o estoque
-    const produtoNoCarrinho = carrinho.find(item => item.id === produtoId);
     const produtoOriginal = produtos.find(p => p.id === produtoId);
 
     if (produtoOriginal && novaQuantidade > produtoOriginal.quantidade) {
