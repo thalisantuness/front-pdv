@@ -22,6 +22,7 @@ function UserListAdmin() {
     senha: "",
     nome: "",
     telefone: "",
+    cliente_endereco: "",
     role: "cliente",
     foto_perfil: null // <- Vai armazenar a URL (edição) ou o base64 (novo upload)
   });
@@ -196,6 +197,7 @@ function UserListAdmin() {
         senha: "", // Senha em branco para edição
         nome: userData.nome || "",
         telefone: userData.telefone || "",
+        cliente_endereco: userData.cliente_endereco || userData.endereco || "",
         role: userData.role || "cliente",
         foto_perfil: userData.foto_perfil || null // <- Carrega a URL da foto
       });
@@ -225,6 +227,7 @@ function UserListAdmin() {
       senha: "",
       nome: "",
       telefone: "",
+      cliente_endereco: "",
       role: defaultRole,
       foto_perfil: null // <- Limpa a foto
     });
@@ -240,6 +243,7 @@ function UserListAdmin() {
       senha: "",
       nome: "",
       telefone: "",
+      cliente_endereco: "",
       role: "cliente",
       foto_perfil: null // <- Limpa a foto
     });
@@ -301,6 +305,7 @@ function UserListAdmin() {
           email: formData.email,
           nome: formData.nome,
           telefone: formData.telefone,
+          cliente_endereco: formData.cliente_endereco || null,
           role: formData.role,
         };
 
@@ -335,6 +340,7 @@ function UserListAdmin() {
           senha: formData.senha,
           nome: formData.nome,
           telefone: formData.telefone,
+          cliente_endereco: formData.cliente_endereco || null,
           role: formData.role,
           // <<< LÓGICA DA FOTO PARA CADASTRO >>>
           // Envia o base64 se existir, ou null se não
@@ -655,6 +661,20 @@ function UserListAdmin() {
                   onChange={handleInputChange}
                   required
                   placeholder="(00) 00000-0000"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="cliente_endereco">
+                  Endereço
+                </label>
+                <input
+                  type="text"
+                  id="cliente_endereco"
+                  name="cliente_endereco"
+                  value={formData.cliente_endereco}
+                  onChange={handleInputChange}
+                  placeholder="Digite o endereço completo (opcional)"
                 />
               </div>
 

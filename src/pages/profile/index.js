@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import SideBar from "../../components/SideBar";
-import Footer from "../../components/Footer";
 import { usePlataforma } from "../../context/PlataformaContext";
 import "./styles.css";
 import axios from "axios";
@@ -218,7 +217,6 @@ function ProfilePage() {
             </form>
           </div>
         </div>
-        <Footer />
       </div>
     </div>
   );

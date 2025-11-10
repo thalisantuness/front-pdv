@@ -4,7 +4,6 @@ import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import { FaTrash, FaPlus, FaSpinner, FaCheck, FaTimes, FaSave, FaArrowLeft } from 'react-icons/fa';
 import SideBar from '../../components/SideBar';
-import Footer from '../../components/Footer';
 import { usePlataforma } from '../../context/PlataformaContext';
 import './styles.css';
 
@@ -31,11 +30,65 @@ function EditImovel() {
   const [updating, setUpdating] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [deletingPhoto, setDeletingPhoto] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
   const fileInputRef = useRef(null);
   const secondaryPhotosInputRef = useRef(null);
 
   // URL da API
   const API_URL = "https://back-pdv-production.up.railway.app/produtos";
+
+  // Carrega categorias únicas dos produtos existentes
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        setLoadingCategories(true);
+        const response = await axios.get(API_URL, {
+          headers: getAuthHeaders()
+        });
+        
+        // Extrai categorias únicas dos produtos
+        const produtos = response.data || [];
+        const categoriasUnicas = [...new Set(produtos.map(p => p.tipo_produto).filter(Boolean))];
+        
+        // Converte para formato de opções do select
+        const categoriasFormatadas = categoriasUnicas.map((nome, index) => ({
+          categoria_id: index + 1,
+          nome: nome
+        }));
+        
+        // Adiciona categorias padrão se não existirem
+        const categoriasPadrao = ['Eletrônico', 'Móvel', 'Roupa', 'Alimento', 'Bebida', 'Outro'];
+        categoriasPadrao.forEach(cat => {
+          if (!categoriasUnicas.includes(cat)) {
+            categoriasFormatadas.push({
+              categoria_id: categoriasFormatadas.length + 1,
+              nome: cat
+            });
+          }
+        });
+        
+        setCategories(categoriasFormatadas);
+      } catch (error) {
+        console.error('Erro ao carregar categorias:', error);
+        // Se der erro, usa categorias padrão como fallback
+        setCategories([
+          { categoria_id: 1, nome: 'Eletrônico' },
+          { categoria_id: 2, nome: 'Móvel' },
+          { categoria_id: 3, nome: 'Roupa' },
+          { categoria_id: 4, nome: 'Alimento' },
+          { categoria_id: 5, nome: 'Bebida' },
+          { categoria_id: 6, nome: 'Outro' }
+        ]);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    loadCategories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Carrega dados do produto
   useEffect(() => {
@@ -91,6 +144,41 @@ function EditImovel() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+  const handleCreateCategory = () => {
+    if (!newCategoryName || newCategoryName.trim() === '') {
+      toast.error('O nome da categoria é obrigatório!');
+      return;
+    }
+
+    const categoriaNome = newCategoryName.trim();
+    
+    // Verifica se a categoria já existe
+    const categoriaExiste = categories.some(cat => cat.nome.toLowerCase() === categoriaNome.toLowerCase());
+    
+    if (categoriaExiste) {
+      toast.warning('Esta categoria já existe!');
+      // Seleciona a categoria existente
+      const categoriaExistente = categories.find(cat => cat.nome.toLowerCase() === categoriaNome.toLowerCase());
+      setFormData({ ...formData, tipo_produto: categoriaExistente.nome });
+    } else {
+      // Adiciona a nova categoria à lista local
+      const newCategory = {
+        categoria_id: categories.length + 1,
+        nome: categoriaNome
+      };
+      setCategories([...categories, newCategory]);
+      
+      // Seleciona automaticamente a nova categoria
+      setFormData({ ...formData, tipo_produto: newCategory.nome });
+      
+      toast.success('Categoria adicionada! Ela será salva quando você atualizar o produto.');
+    }
+    
+    // Fecha o modal e limpa o campo
+    setShowCategoryModal(false);
+    setNewCategoryName('');
   };
 
   const handleNumberChange = (e) => {
@@ -248,7 +336,6 @@ function EditImovel() {
             <FaSpinner className="spinner" /> Carregando dados do produto...
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -288,20 +375,37 @@ function EditImovel() {
                 
                 <div className="form-group">
                   <label>Categoria *</label>
-                  <select
-                    name="tipo_produto"
-                    value={formData.tipo_produto}
-                    onChange={handleChange}
-                    required
-                    disabled={updating}
-                  >
-                    <option value="Eletrônico">Eletrônico</option>
-                    <option value="Móvel">Móvel</option>
-                    <option value="Roupa">Roupa</option>
-                    <option value="Alimento">Alimento</option>
-                    <option value="Bebida">Bebida</option>
-                    <option value="Outro">Outro</option>
-                  </select>
+                  <div className="category-select-container">
+                    <select
+                      name="tipo_produto"
+                      value={formData.tipo_produto}
+                      onChange={handleChange}
+                      required
+                      disabled={updating || loadingCategories}
+                      className="category-select"
+                    >
+                      <option value="">Selecione uma categoria</option>
+                      {categories.map((category) => (
+                        <option key={category.categoria_id} value={category.nome}>
+                          {category.nome}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => setShowCategoryModal(true)}
+                      className="add-category-btn"
+                      disabled={updating || loadingCategories}
+                      title="Criar nova categoria"
+                    >
+                      <FaPlus />
+                    </button>
+                  </div>
+                  {loadingCategories && (
+                    <small style={{ color: '#718096', fontSize: '0.875rem', display: 'block', marginTop: '0.25rem' }}>
+                      Carregando categorias...
+                    </small>
+                  )}
                 </div>
               </div>
             </div>
@@ -517,8 +621,68 @@ function EditImovel() {
             </div>
           </div>
         </div>
-        <Footer />
       </div>
+
+      {/* Modal de Criar Categoria */}
+      {showCategoryModal && (
+        <div className="modal-overlay" onClick={() => setShowCategoryModal(false)}>
+          <div className="modal-content category-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Nova Categoria</h3>
+              <button 
+                className="modal-close" 
+                onClick={() => {
+                  setShowCategoryModal(false);
+                  setNewCategoryName('');
+                }}
+              >
+                <FaTimes />
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="form-group">
+                <label htmlFor="newCategoryName">Nome da Categoria *</label>
+                <input
+                  type="text"
+                  id="newCategoryName"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="Ex: Eletrônico, Roupa, Alimento..."
+                  autoFocus
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleCreateCategory();
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="cancel-btn"
+                onClick={() => {
+                  setShowCategoryModal(false);
+                  setNewCategoryName('');
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="save-btn"
+                onClick={handleCreateCategory}
+                disabled={!newCategoryName.trim()}
+              >
+                <FaCheck /> Adicionar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

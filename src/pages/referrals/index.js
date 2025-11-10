@@ -1,7 +1,6 @@
 // pages/referrals/index.js
 import React, { useState } from "react";
 import SideBar from "../../components/SideBar/index";
-import Footer from "../../components/Footer/index";
 import { FaUserPlus, FaGift, FaPhone, FaEnvelope, FaCheckCircle, FaClock } from "react-icons/fa";
 import "./styles.css";
 
@@ -294,7 +293,6 @@ function ReferralsPage() {
             )}
           </div>
         </div>
-        <Footer />
       </div>
     </div>
   );

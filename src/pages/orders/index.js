@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import SideBar from "../../components/SideBar/index";
-import Footer from "../../components/Footer/index";
 import { FaPlus, FaTimes, FaSearch, FaDollarSign, FaUser, FaCalendar, FaEdit, FaTrash, FaEye, FaCheck, FaBan, FaShoppingCart, FaMoneyBillWave, FaChartLine, FaCalendarCheck } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
@@ -60,7 +59,7 @@ function OrdersPage() {
         const produto = pedido.Produto || null;
         
         return {
-          id: `ORD-${String(pedido.pedido_id).padStart(3, '0')}`,
+          id: `${String(pedido.pedido_id).padStart(3, '0')}`,
           pedido_id: pedido.pedido_id,
           produto_id: pedido.produto_id,
           quantidade: pedido.quantidade || 1,
@@ -69,6 +68,7 @@ function OrdersPage() {
           cliente: pedido.Cliente?.nome || "Cliente não informado",
           cliente_email: pedido.Cliente?.email || "-",
           cliente_telefone: pedido.Cliente?.telefone || "-",
+          cliente_endereco: pedido.Cliente?.cliente_endereco || pedido.Cliente?.endereco || null,
           cliente_role: pedido.Cliente?.role || "-",
           // Informações da Empresa
           empresa_id: pedido.empresa_id,
@@ -608,6 +608,7 @@ function OrdersPage() {
                 return (
                   <div key={order.pedido_id} className="order-card">
                     <div className="order-card-content">
+                      {/* Código da foto removido - ver ANIMATION_CODE_BACKUP.md para reaproveitar a animação
                       {order.produto_foto && (
                         <div className="order-image">
                           <img 
@@ -619,6 +620,7 @@ function OrdersPage() {
                           />
                         </div>
                       )}
+                      */}
 
                       <div className="order-info-container">
                         <div className="order-header">
@@ -662,6 +664,13 @@ function OrdersPage() {
                             <p><strong>Nome:</strong> {order.cliente}</p>
                             <p><strong>Email:</strong> {order.cliente_email}</p>
                             <p><strong>Telefone:</strong> {order.cliente_telefone}</p>
+                            {order.cliente_endereco && 
+                             order.cliente_endereco !== "-" && 
+                             order.cliente_endereco !== null && 
+                             order.cliente_endereco !== undefined &&
+                             String(order.cliente_endereco).trim() !== "" && (
+                              <p><strong> Endereço:</strong> {order.cliente_endereco}</p>
+                            )}
                           </div>
 
                           <div className="company-info">
@@ -778,7 +787,6 @@ function OrdersPage() {
             )}
           </div>
         </div>
-        <Footer />
       </div>
 
       {/* Modal de Adicionar/Editar Pedido */}
@@ -982,11 +990,13 @@ function OrdersPage() {
             </div>
 
             <div className="order-details-modal">
+              {/* Código da foto removido - ver ANIMATION_CODE_BACKUP.md para reaproveitar a animação
               {pedidoEditando.produto_foto && (
                 <div className="detail-image">
                   <img src={pedidoEditando.produto_foto} alt={pedidoEditando.produto_nome} />
                 </div>
               )}
+              */}
               
               <div className="detail-info">
                 <div className="detail-group">
@@ -1019,6 +1029,9 @@ function OrdersPage() {
                   <p><strong>Nome:</strong> {pedidoEditando.cliente}</p>
                   <p><strong>Email:</strong> {pedidoEditando.cliente_email}</p>
                   <p><strong>Telefone:</strong> {pedidoEditando.cliente_telefone}</p>
+                  {pedidoEditando.cliente_endereco && pedidoEditando.cliente_endereco !== "-" && pedidoEditando.cliente_endereco.trim() !== "" && (
+                    <p><strong> Endereço:</strong> {pedidoEditando.cliente_endereco}</p>
+                  )}
                 </div>
 
                 <div className="detail-group">
