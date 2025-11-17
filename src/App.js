@@ -15,6 +15,7 @@ import EditImovel from "./pages/edit-product-admin";
 import OrdersPage from "./pages/orders";
 import ReferralsPage from "./pages/referrals";
 import ProfilePage from "./pages/profile";
+import RegisterCompany from "./pages/register-company";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <div className="container">
           <Routes>
             <Route path="/" element={<LoginAdmin />} />
+            <Route path="/registrar-empresa" element={<RegisterCompany />} />
 
             {/* Rotas protegidas */}
             <Route

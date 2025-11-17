@@ -3,6 +3,7 @@ import axios from "axios";
 import "./styles.css";
 import { ToastContainer, toast } from 'react-toastify';
 import { usePlataforma } from "../../context/PlataformaContext";
+import { Link } from 'react-router-dom';
 
 export default function FormLogin() {
   const [formData, setFormData] = useState({
@@ -113,6 +114,12 @@ export default function FormLogin() {
               "Entrar"
             )}
           </button>
+
+          <div className="login-footer">
+            <p className="login-link-text">
+              Não tem uma conta? <Link to="/registrar-empresa" className="login-link">Criar conta empresa</Link>
+            </p>
+          </div>
         </form>
       </div>
     </div>
