@@ -41,7 +41,10 @@ function PDVVendas() {
             imageData: produto.imageData,
             photos: produto.photos || [],
             data_cadastro: produto.data_cadastro,
-            data_update: produto.data_update
+            data_update: produto.data_update,
+            empresa_id: produto.empresa_id,
+            empresa_nome: produto.Empresa?.nome || produto.empresa_nome || null,
+            empresa: produto.Empresa || null
           }));
 
           setProdutos(produtosData);
@@ -192,7 +195,10 @@ function PDVVendas() {
           imageData: produto.imageData,
           photos: produto.photos || [],
           data_cadastro: produto.data_cadastro,
-          data_update: produto.data_update
+          data_update: produto.data_update,
+          empresa_id: produto.empresa_id,
+          empresa_nome: produto.Empresa?.nome || produto.empresa_nome || null,
+          empresa: produto.Empresa || null
         }));
         setProdutos(produtosData);
       }
@@ -324,8 +330,18 @@ function PDVVendas() {
                             </div>
                             <div className="info-item">
                               <span>Tipo:</span>
-                              <strong>{produto.tipo_comercializacao}</strong>
+                              <strong>
+                                {produto.tipo_comercializacao === 'ecommerce' && produto.empresa_nome
+                                  ? produto.empresa_nome
+                                  : produto.tipo_comercializacao}
+                              </strong>
                             </div>
+                            {produto.empresa_nome && produto.tipo_comercializacao === 'ecommerce' && (
+                              <div className="info-item empresa-info">
+                                <span>Vendido por:</span>
+                                <strong className="empresa-name">🏢 {produto.empresa_nome}</strong>
+                              </div>
+                            )}
                             <div className="info-item">
                               <span>Estoque:</span>
                               <strong className={stockStatus.class}>

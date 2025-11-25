@@ -56,9 +56,16 @@ function UserListAdmin() {
         return;
       }
 
+      // Adiciona timestamp para evitar cache (304 Not Modified)
       const response = await axios.get(API_URL, {
-        headers: getAuthHeaders()
+        headers: getAuthHeaders(),
+        params: {
+          _t: Date.now() // Cache busting
+        }
       });
+
+      console.log("Resposta da API /usuarios:", response.data);
+      console.log("Usuário logado:", usuarioLogado);
 
       let usersData = [];
 
@@ -84,7 +91,8 @@ function UserListAdmin() {
         telefone: user.telefone || "Não informado",
         tipo: mapUserRole(user.role),
         role: user.role,
-        foto_perfil: user.foto_perfil || null, // <<< ADICIONADO
+        foto_perfil: user.foto_perfil || null,
+        empresa_pai_id: user.empresa_pai_id || null,
         data_cadastro: user.data_cadastro || new Date().toISOString(),
         ultimo_acesso: user.data_update || user.data_cadastro || new Date().toISOString()
       }));
@@ -344,12 +352,23 @@ function UserListAdmin() {
           role: formData.role,
           // <<< LÓGICA DA FOTO PARA CADASTRO >>>
           // Envia o base64 se existir, ou null se não
-          foto_perfil: formData.foto_perfil || null 
+          foto_perfil: formData.foto_perfil || null
         };
 
-        await axios.post(CADASTRO_URL, payload, {
+        // Se o usuário logado for uma empresa, envia o ID da empresa pai para vincular
+        // Isso aplica tanto para clientes quanto para outras empresas
+        if (usuarioLogado?.role === 'empresa') {
+          payload.empresa_pai_id = usuarioLogado.usuario_id;
+        }
+
+        console.log("Payload enviado:", payload);
+        console.log("Usuário logado:", usuarioLogado);
+
+        const createResponse = await axios.post(CADASTRO_URL, payload, {
           headers: getAuthHeaders()
         });
+
+        console.log("Resposta da criação:", createResponse.data);
 
         toast.success("Usuário cadastrado com sucesso!", {
           position: "top-right",
@@ -358,7 +377,10 @@ function UserListAdmin() {
       }
 
       closeModal();
-      fetchUsers(); // Atualiza a lista de usuários
+      // Aguarda um pouco antes de atualizar para garantir que o backend processou
+      setTimeout(() => {
+        fetchUsers(); // Atualiza a lista de usuários
+      }, 500);
 
     } catch (error) {
       console.error("Erro ao salvar usuário:", error);

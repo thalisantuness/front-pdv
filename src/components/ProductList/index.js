@@ -74,7 +74,10 @@ function ProductListAdmin() {
           imageData: produto.imageData,
           photos: produto.photos || [],
           data_cadastro: produto.data_cadastro,
-          data_update: produto.data_update
+          data_update: produto.data_update,
+          empresa_id: produto.empresa_id,
+          empresa_nome: produto.Empresa?.nome || produto.empresa_nome || null,
+          empresa: produto.Empresa || null
         }));
 
         setProdutos(produtosData);
@@ -439,8 +442,15 @@ function ProductListAdmin() {
                         <span className="category-tag">{produto.tipo_produto}</span>
                       </div>
                       
-                      <div className="table-col type" data-label="Tipo Venda">
-                        <span className="type-badge">{produto.tipo_comercializacao}</span>
+                      <div className="table-col type" data-label="Tipo Venda / Empresa">
+                        <div className="type-badge-container">
+                          <span className="type-badge">{produto.tipo_comercializacao}</span>
+                          {produto.empresa_nome && (
+                            <span className="empresa-badge" title={`Vendido por: ${produto.empresa_nome}`}>
+                              🏢 {produto.empresa_nome}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       
                       <div className="table-col actions" data-label="Ações">

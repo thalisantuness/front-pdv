@@ -127,6 +127,27 @@
   color: #2d3748;
 }
 
+.empresa-info {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #fbbf24;
+  margin-top: 0.5rem;
+}
+
+.empresa-info span {
+  color: #92400e;
+  font-weight: 600;
+}
+
+.empresa-name {
+  color: #92400e !important;
+  font-weight: 700 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 /* Melhorias na lista mini */
 .product-mini-info {
   flex: 1;
