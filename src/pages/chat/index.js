@@ -20,6 +20,7 @@ function ChatPage() {
     carregarConversas,
     selecionarConversa,
     enviarMensagem,
+    criarConversa,
     isMinhaMensagem,
     isMensagemFuncionario
   } = useChat();
@@ -57,6 +58,18 @@ function ChatPage() {
     await enviarMensagem(conteudo, destinatarioId);
   };
 
+  const handleCreateConversa = async (destinatarioId) => {
+    try {
+      const novaConversa = await criarConversa(destinatarioId);
+      if (novaConversa) {
+        selecionarConversa(novaConversa);
+        setShowConversas(false);
+      }
+    } catch (error) {
+      // Erro já tratado no hook
+    }
+  };
+
   return (
     <div className="container">
       <SideBar />
@@ -71,6 +84,7 @@ function ChatPage() {
                 conversaAtual={conversaAtual}
                 onSelectConversa={handleSelectConversa}
                 loading={loading}
+                onCreateConversa={handleCreateConversa}
               />
             )}
             
