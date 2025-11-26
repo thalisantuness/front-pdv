@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import SideBar from "../../components/SideBar/index";
-import { FaPlus, FaTimes, FaSearch, FaDollarSign, FaUser, FaCalendar, FaEdit, FaTrash, FaEye, FaCheck, FaBan, FaShoppingCart, FaMoneyBillWave, FaChartLine, FaCalendarCheck } from "react-icons/fa";
+import { FaPlus, FaTimes, FaSearch, FaDollarSign, FaUser, FaCalendar, FaEdit, FaTrash, FaEye, FaCheck, FaBan, FaShoppingCart, FaMoneyBillWave, FaChartLine, FaCalendarCheck, FaCoins } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
 import { usePlataforma } from "../../context/PlataformaContext";
@@ -40,18 +40,22 @@ function OrdersPage() {
     observacao: ""
   });
 
-  // Carregar pedidos, produtos e usuários ao montar o componente
+  // Carregar produtos e usuários primeiro, depois pedidos (para ter valor_custo disponível)
   useEffect(() => {
-    carregarPedidos();
-    carregarProdutos();
-    carregarUsuarios();
+    const carregarDados = async () => {
+      await carregarProdutos();
+      await carregarUsuarios();
+      await carregarPedidos(); // Carregar pedidos depois para ter acesso aos produtos
+    };
+    carregarDados();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const carregarPedidos = async () => {
     try {
       setLoadingOrders(true);
-      const response = await axios.get(API_URL, {
+      // Adicionar cache busting para evitar 304 Not Modified
+      const response = await axios.get(`${API_URL}?_t=${Date.now()}`, {
         headers: getAuthHeaders()
       });
 
@@ -59,11 +63,34 @@ function OrdersPage() {
         // Tratar caso onde Produto é null
         const produto = pedido.Produto || null;
         
+        // Buscar produto completo na lista de produtos carregados para pegar valor_custo
+        // O objeto Produto do pedido não tem valor_custo, então precisamos buscar na lista
+        const produtoCompleto = produtos.find(p => p.produto_id === pedido.produto_id);
+        
+        // Usar produto completo da lista se disponível, senão usar o do pedido
+        // Mas sempre priorizar valor_custo da lista de produtos
+        const produtoFinal = produtoCompleto || produto;
+        
+        // Garantir que valor_custo seja um número válido
+        // O valor_custo só vem na lista de produtos, não no objeto Produto do pedido
+        const valorVenda = parseFloat(produtoFinal?.valor || produto?.valor || 0) || 0;
+        const valorCusto = parseFloat(produtoCompleto?.valor_custo || 0) || 0;
+        const quantidade = parseFloat(pedido.quantidade) || 1;
+        
+        // Debug: logar se valor_custo estiver zerado e produto não foi encontrado
+        if (valorCusto === 0 && valorVenda > 0 && !produtoCompleto) {
+          console.warn(`⚠️ Produto ID ${pedido.produto_id} não encontrado na lista de produtos. Lucro será igual ao faturamento.`, {
+            produto_id: pedido.produto_id,
+            produtos_carregados: produtos.length,
+            produto_ids_disponiveis: produtos.map(p => p.produto_id)
+          });
+        }
+        
         return {
           id: `${String(pedido.pedido_id).padStart(3, '0')}`,
           pedido_id: pedido.pedido_id,
           produto_id: pedido.produto_id,
-          quantidade: pedido.quantidade || 1,
+          quantidade: quantidade,
           // Informações do Cliente
           cliente_id: pedido.cliente_id,
           cliente: pedido.Cliente?.nome || "Cliente não informado",
@@ -79,11 +106,14 @@ function OrdersPage() {
           empresa_role: pedido.Empresa?.role || "-",
           // Informações do Produto (com verificação de null)
           produto_nome: produto?.nome || "Produto não informado",
-          produto_valor: produto?.valor || 0,
+          produto_valor: valorVenda,
+          produto_valor_custo: valorCusto,
           produto_foto: produto?.foto_principal || null,
           produto_menu: produto?.menu || null,
           // Calcular total
-          total: (produto?.valor || 0) * (pedido.quantidade || 1),
+          total: valorVenda * quantidade,
+          // Calcular lucro (valor de venda - valor de custo) * quantidade
+          lucro: (valorVenda - valorCusto) * quantidade,
           // Outras informações
           status: pedido.status,
           data_hora_entrega: pedido.data_hora_entrega,
@@ -94,6 +124,18 @@ function OrdersPage() {
       });
 
       setOrders(pedidosMapeados);
+      console.log(`✅ ${pedidosMapeados.length} pedidos carregados. Produtos disponíveis: ${produtos.length}`);
+      
+      // Verificar se todos os produtos dos pedidos foram encontrados
+      const produtosNaoEncontrados = pedidosMapeados.filter(p => {
+        const produtoCompleto = produtos.find(prod => prod.produto_id === p.produto_id);
+        return !produtoCompleto && p.produto_valor > 0;
+      });
+      
+      if (produtosNaoEncontrados.length > 0) {
+        console.warn(`⚠️ ${produtosNaoEncontrados.length} pedidos com produtos não encontrados na lista. IDs:`, 
+          produtosNaoEncontrados.map(p => p.produto_id));
+      }
     } catch (error) {
       console.error("Erro ao carregar pedidos:", error);
       toast.error("Erro ao carregar pedidos da API!");
@@ -125,6 +167,7 @@ function OrdersPage() {
       }
       
       setProdutos(produtosFiltrados);
+      console.log(`✅ ${produtosFiltrados.length} produtos carregados para cálculo de lucro`);
     } catch (error) {
       console.error("Erro ao carregar produtos:", error);
       toast.error("Erro ao carregar lista de produtos!");
@@ -165,10 +208,20 @@ function OrdersPage() {
       .filter(o => o && (o.status === 'confirmado' || o.status === 'entregue'))
       .reduce((total, o) => total + (o.total || 0), 0);
     
+    // Lucro realizado (pedidos confirmados e entregues)
+    const lucroRealizado = orders
+      .filter(o => o && (o.status === 'confirmado' || o.status === 'entregue'))
+      .reduce((total, o) => total + (o.lucro || 0), 0);
+    
     // Previsão de faturamento (pedidos pendentes e em transporte)
     const previsaoFaturamento = orders
       .filter(o => o && (o.status === 'pendente' || o.status === 'em_transporte'))
       .reduce((total, o) => total + (o.total || 0), 0);
+    
+    // Previsão de lucro (pedidos pendentes e em transporte)
+    const previsaoLucro = orders
+      .filter(o => o && (o.status === 'pendente' || o.status === 'em_transporte'))
+      .reduce((total, o) => total + (o.lucro || 0), 0);
     
     // Pedidos de hoje (com verificação de data_hora_entrega)
     const pedidosHoje = orders.filter(o => {
@@ -190,7 +243,9 @@ function OrdersPage() {
 
     return {
       faturamentoRealizado,
+      lucroRealizado,
       previsaoFaturamento,
+      previsaoLucro,
       faturamentoHoje,
       previsaoHoje,
       pedidosHoje: pedidosHoje.length,
@@ -523,6 +578,24 @@ function OrdersPage() {
               </div>
             </div>
 
+            <div className="big-number-card profit-card">
+              <div className="big-number-icon">
+                <FaCoins />
+              </div>
+              <div className="big-number-content">
+                <span className="big-number-value">
+                  {formatCurrency(estatisticas.lucroRealizado)}
+                </span>
+                <span className="big-number-label">Lucro Realizado</span>
+                <span className="big-number-subtitle">Pedidos Confirmados/Entregues</span>
+                {estatisticas.previsaoLucro > 0 && (
+                  <span className="profit-forecast">
+                    Previsão: {formatCurrency(estatisticas.previsaoLucro)}
+                  </span>
+                )}
+              </div>
+            </div>
+
             <div className="big-number-card total-card">
               <div className="big-number-icon">
                 <FaShoppingCart />
@@ -752,7 +825,8 @@ function OrdersPage() {
                           )}
 
                           {/* Botões para pedidos com status "em_transporte" */}
-                          {order.status === "em_transporte" && (
+                          {/* Apenas CLIENTE pode marcar como entregue quando está em transporte */}
+                          {order.status === "em_transporte" && usuarioLogado?.role === "cliente" && (
                             <>
                               <button
                                 className="action-btn delivered-btn"
@@ -761,6 +835,13 @@ function OrdersPage() {
                                 ✅ Marcar como Entregue
                               </button>
                             </>
+                          )}
+                          
+                          {/* Empresa não vê botão de entregue quando está em transporte */}
+                          {order.status === "em_transporte" && (usuarioLogado?.role === "empresa" || usuarioLogado?.role === "empresa-funcionario") && (
+                            <div className="info-message">
+                              <p>📦 Pedido em transporte. Aguardando confirmação do cliente.</p>
+                            </div>
                           )}
 
                           {/* Botões para pedidos com status "cancelado" */}

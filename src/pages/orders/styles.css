@@ -148,6 +148,12 @@
   box-shadow: 0 4px 16px rgba(237, 137, 54, 0.3);
 }
 
+.profit-card .big-number-icon {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+}
+
 .total-card .big-number-icon {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -180,6 +186,14 @@
   font-size: 0.75rem;
   color: #a0aec0;
   font-weight: 500;
+}
+
+.profit-forecast {
+  display: block;
+  margin-top: 0.5rem;
+  color: #059669;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .today-details,
@@ -801,7 +815,24 @@
 
 .delete-btn:hover {
   box-shadow: 0 6px 25px rgba(229, 62, 62, 0.45);
-  background: linear-gradient(135deg, #c53030 0%, #9b2c2c 100%);
+}
+
+/* Mensagem informativa */
+.info-message {
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid #fbbf24;
+  border-radius: 12px;
+  color: #92400e;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.info-message p {
+  margin: 0;
+  font-size: 0.95rem;
 }
 
 /* ==================== MODAIS ==================== */

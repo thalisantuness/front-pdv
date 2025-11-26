@@ -18,9 +18,9 @@ function FormRegister({ productId }) {
     valor: '',
     valor_custo: '',
     quantidade: '',
-    tipo_comercializacao: 'Venda',
+    tipo_comercializacao: 'ambos', // Sempre será 'ambos'
     tipo_produto: 'Eletrônico',
-    menu: '',
+    menu: 'ambos', // Sempre será 'ambos'
     empresas_autorizadas: [],
     foto_principal: ''
   });
@@ -121,9 +121,9 @@ function FormRegister({ productId }) {
         valor: produto.valor || '',
         valor_custo: produto.valor_custo || '',
         quantidade: produto.quantidade || '',
-        tipo_comercializacao: produto.tipo_comercializacao || 'Venda',
+        tipo_comercializacao: produto.tipo_comercializacao || 'ambos',
         tipo_produto: produto.tipo_produto || 'Eletrônico',
-        menu: produto.menu || '',
+        menu: produto.menu || 'ambos',
         empresas_autorizadas: produto.empresas_autorizadas || [],
         // Usa foto_principal ou imageData retornado pela API
         foto_principal: produto.foto_principal || produto.imageData || ''
@@ -232,7 +232,7 @@ function FormRegister({ productId }) {
         quantidade: Number(formData.quantidade),
         tipo_comercializacao: formData.tipo_comercializacao,
         tipo_produto: formData.tipo_produto,
-        menu: formData.menu || null,
+        menu: 'ambos', // Sempre será 'ambos'
         empresas_autorizadas: formData.empresas_autorizadas.length > 0 ? formData.empresas_autorizadas : null,
         foto_principal: formData.foto_principal || undefined
       };
@@ -511,30 +511,6 @@ function FormRegister({ productId }) {
                 <option value="Serviço">Serviço</option>
                 <option value="Dropshipping">Dropshipping</option>
               </select>
-            </div>
-          </div>
-        </div>
-        
-        {/* Seção de menu */}
-        <div className="form-section">
-          <h3>Canal de Vendas e Autorizações</h3>
-          <div className="form-grid">
-            <div className="form-group">
-              <label>Disponível em</label>
-              <select
-                name="menu"
-                value={formData.menu}
-                onChange={handleChange}
-                disabled={loading}
-              >
-                <option value="">Selecione um canal (opcional)</option>
-                <option value="ecommerce">E-commerce</option>
-                <option value="varejo">Varejo</option>
-                <option value="ambos">Ambos</option>
-              </select>
-              <small className="field-hint">
-                Define em qual canal este produto estará disponível. Deixe em branco para disponibilizar em todos os canais.
-              </small>
             </div>
           </div>
         </div>

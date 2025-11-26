@@ -85,6 +85,11 @@ function UserListAdmin() {
          return;
       }
       
+      // IMPORTANTE: O backend já faz toda a filtragem necessária:
+      // - Para empresas: retorna funcionários, empresas filhas E clientes que têm pedidos
+      // - Clientes aparecem automaticamente quando fazem pedidos (não precisa empresa_pai_id)
+      // - Um cliente pode aparecer na listagem de várias empresas
+      // O frontend apenas exibe os dados retornados, sem filtros adicionais
       const mappedUsers = usersData.map(user => ({
         id: user.usuario_id,
         nome: user.nome || user.email,
@@ -93,7 +98,7 @@ function UserListAdmin() {
         tipo: mapUserRole(user.role),
         role: user.role,
         foto_perfil: user.foto_perfil || null,
-        empresa_pai_id: user.empresa_pai_id || null,
+        empresa_pai_id: user.empresa_pai_id || null, // Pode ser null para clientes (não usado para filtro)
         data_cadastro: user.data_cadastro || new Date().toISOString(),
         ultimo_acesso: user.data_update || user.data_cadastro || new Date().toISOString()
       }));
@@ -701,32 +706,32 @@ function UserListAdmin() {
                 />
               </div>
 
-              <div className="form-group">
-                <label htmlFor="role">Tipo de Usuário *</label>
-                <select
-                  id="role"
-                  name="role"
-                  value={formData.role}
-                  onChange={handleInputChange}
-                  required
-                  disabled={!isAdmin} // Desabilita se não for admin
-                >
-                  {isAdmin ? (
-                    <>
-                      <option value="admin">Administrador</option>
-                      <option value="empresa">Empresa</option>
-                      <option value="cliente">Cliente</option>
-                    </>
-                  ) : (
+              {/* Campo "Tipo de Usuário" visível apenas para Administradores */}
+              {isAdmin && (
+                <div className="form-group">
+                  <label htmlFor="role">Tipo de Usuário *</label>
+                  <select
+                    id="role"
+                    name="role"
+                    value={formData.role}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="admin">Administrador</option>
                     <option value="empresa">Empresa</option>
-                  )}
-                </select>
-                {!isAdmin && (
-                  <small className="form-help">
-                    Empresas só podem cadastrar outras empresas
-                  </small>
-                )}
-              </div>
+                    <option value="cliente">Cliente</option>
+                  </select>
+                </div>
+              )}
+              
+              {/* Para não-admins, o role é fixo como "empresa" (oculto) */}
+              {!isAdmin && (
+                <input
+                  type="hidden"
+                  name="role"
+                  value="empresa"
+                />
+              )}
 
               {/* <<< NOVO CAMPO DE FOTO >>> */}
               
