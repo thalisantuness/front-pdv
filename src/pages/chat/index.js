@@ -32,10 +32,10 @@ function ChatPage() {
       return;
     }
 
-    // Verificar se é empresa ou funcionário
+    // Verificar se é empresa, funcionário ou admin
     const role = usuario?.role;
-    if (role !== 'empresa' && role !== 'empresa-funcionario') {
-      toast.error('Acesso restrito a empresas e funcionários');
+    if (role !== 'empresa' && role !== 'empresa-funcionario' && role !== 'admin') {
+      toast.error('Acesso restrito a empresas, funcionários e administradores');
       navigate('/home');
       return;
     }
