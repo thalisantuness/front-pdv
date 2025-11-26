@@ -43,15 +43,15 @@ function OrdersPage() {
   // Carregar produtos e usuários primeiro, depois pedidos (para ter valor_custo disponível)
   useEffect(() => {
     const carregarDados = async () => {
-      await carregarProdutos();
+      const produtosCarregados = await carregarProdutos();
       await carregarUsuarios();
-      await carregarPedidos(); // Carregar pedidos depois para ter acesso aos produtos
+      await carregarPedidos(produtosCarregados); // Passar produtos diretamente para garantir que estão disponíveis
     };
     carregarDados();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const carregarPedidos = async () => {
+  const carregarPedidos = async (produtosParaUsar = null) => {
     try {
       setLoadingOrders(true);
       // Adicionar cache busting para evitar 304 Not Modified
@@ -59,13 +59,16 @@ function OrdersPage() {
         headers: getAuthHeaders()
       });
 
+      // Usar produtos passados como parâmetro ou o estado (priorizar parâmetro)
+      const produtosDisponiveis = produtosParaUsar || produtos;
+
       const pedidosMapeados = response.data.map(pedido => {
         // Tratar caso onde Produto é null
         const produto = pedido.Produto || null;
         
         // Buscar produto completo na lista de produtos carregados para pegar valor_custo
         // O objeto Produto do pedido não tem valor_custo, então precisamos buscar na lista
-        const produtoCompleto = produtos.find(p => p.produto_id === pedido.produto_id);
+        const produtoCompleto = produtosDisponiveis.find(p => p.produto_id === pedido.produto_id);
         
         // Usar produto completo da lista se disponível, senão usar o do pedido
         // Mas sempre priorizar valor_custo da lista de produtos
@@ -81,8 +84,8 @@ function OrdersPage() {
         if (valorCusto === 0 && valorVenda > 0 && !produtoCompleto) {
           console.warn(`⚠️ Produto ID ${pedido.produto_id} não encontrado na lista de produtos. Lucro será igual ao faturamento.`, {
             produto_id: pedido.produto_id,
-            produtos_carregados: produtos.length,
-            produto_ids_disponiveis: produtos.map(p => p.produto_id)
+            produtos_carregados: produtosDisponiveis.length,
+            produto_ids_disponiveis: produtosDisponiveis.map(p => p.produto_id)
           });
         }
         
@@ -124,11 +127,11 @@ function OrdersPage() {
       });
 
       setOrders(pedidosMapeados);
-      console.log(`✅ ${pedidosMapeados.length} pedidos carregados. Produtos disponíveis: ${produtos.length}`);
+      console.log(`✅ ${pedidosMapeados.length} pedidos carregados. Produtos disponíveis: ${produtosDisponiveis.length}`);
       
       // Verificar se todos os produtos dos pedidos foram encontrados
       const produtosNaoEncontrados = pedidosMapeados.filter(p => {
-        const produtoCompleto = produtos.find(prod => prod.produto_id === p.produto_id);
+        const produtoCompleto = produtosDisponiveis.find(prod => prod.produto_id === p.produto_id);
         return !produtoCompleto && p.produto_valor > 0;
       });
       
@@ -168,9 +171,13 @@ function OrdersPage() {
       
       setProdutos(produtosFiltrados);
       console.log(`✅ ${produtosFiltrados.length} produtos carregados para cálculo de lucro`);
+      
+      // Retornar produtos para uso imediato (antes do estado ser atualizado)
+      return produtosFiltrados;
     } catch (error) {
       console.error("Erro ao carregar produtos:", error);
       toast.error("Erro ao carregar lista de produtos!");
+      return []; // Retornar array vazio em caso de erro
     } finally {
       setLoadingProdutos(false);
     }
