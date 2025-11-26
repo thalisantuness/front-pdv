@@ -6,6 +6,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
 import SideBar from "../../components/SideBar/index";
 import { usePlataforma } from "../../context/PlataformaContext";
+import { API_ENDPOINTS } from "../../config/api";
 
 // Adicione 'react-toastify/dist/ReactToastify.css' se ainda não estiver importado no seu App.js
 import 'react-toastify/dist/ReactToastify.css';
@@ -32,8 +33,8 @@ function UserListAdmin() {
   const navigate = useNavigate();
 
   // URL da API
-  const API_URL = "https://back-pdv-production.up.railway.app/usuarios";
-  const CADASTRO_URL = "https://back-pdv-production.up.railway.app/cadastrar";
+  const API_URL = API_ENDPOINTS.USUARIOS;
+  const CADASTRO_URL = API_ENDPOINTS.CADASTRO;
 
   useEffect(() => {
     if (!contextLoading) {

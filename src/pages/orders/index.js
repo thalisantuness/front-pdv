@@ -4,12 +4,13 @@ import { FaPlus, FaTimes, FaSearch, FaDollarSign, FaUser, FaCalendar, FaEdit, Fa
 import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
 import { usePlataforma } from "../../context/PlataformaContext";
+import { API_ENDPOINTS } from "../../config/api";
 import "./styles.css";
 
 function OrdersPage() {
-  const API_URL = "https://back-pdv-production.up.railway.app/pedidos";
-  const PRODUTOS_API_URL = "https://back-pdv-production.up.railway.app/produtos";
-  const USUARIOS_API_URL = "https://back-pdv-production.up.railway.app/usuarios";
+  const API_URL = API_ENDPOINTS.PEDIDOS;
+  const PRODUTOS_API_URL = API_ENDPOINTS.PRODUTOS;
+  const USUARIOS_API_URL = API_ENDPOINTS.USUARIOS;
   
   const { getAuthHeaders, usuario: usuarioLogado } = usePlataforma();
   

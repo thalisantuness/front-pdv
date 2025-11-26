@@ -69,6 +69,10 @@ export default function SideBar() {
             Usuários
           </Link>
 
+          <Link to="/chat" onClick={closeMobileMenu}>
+            Chat
+          </Link>
+
           <button className="logout-btn" onClick={handleLogout}>
             Sair
           </button>

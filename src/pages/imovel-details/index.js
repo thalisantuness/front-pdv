@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaShoppingCart, FaTrash, FaPlus, FaMinus, FaSearch } from "react-icons/fa";
 import axios from "axios";
 import { usePlataforma } from "../../context/PlataformaContext";
+import { API_ENDPOINTS } from "../../config/api";
 import "./styles.css";
 import { ToastContainer, toast } from 'react-toastify';
 import SideBar from "../../components/SideBar/index";
@@ -14,7 +15,7 @@ function PDVVendas() {
   const { getAuthHeaders, isAuthenticated } = usePlataforma();
 
   // URL da API
-  const API_URL = "https://back-pdv-production.up.railway.app/produtos";
+  const API_URL = API_ENDPOINTS.PRODUTOS;
 
   useEffect(() => {
     const fetchProdutos = async () => {

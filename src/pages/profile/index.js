@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import SideBar from "../../components/SideBar";
 import { usePlataforma } from "../../context/PlataformaContext";
+import { API_ENDPOINTS } from "../../config/api";
 import "./styles.css";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
@@ -46,7 +47,7 @@ function ProfilePage() {
     if (!usuario?.usuario_id) return;
     setSaving(true);
     try {
-      const USERS_API_URL = `https://back-pdv-production.up.railway.app/usuarios`;
+      const USERS_API_URL = API_ENDPOINTS.USUARIOS;
       const API_URL = `${USERS_API_URL}/${usuario.usuario_id}`;
       const payload = {
         nome: formData.nome,

@@ -3,6 +3,7 @@ import axios from "axios";
 import "./styles.css";
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate, Link } from 'react-router-dom';
+import { API_ENDPOINTS } from "../../config/api";
 
 export default function FormRegisterCompany() {
   const [formData, setFormData] = useState({
@@ -57,7 +58,7 @@ export default function FormRegisterCompany() {
       };
 
       await axios.post(
-        "https://back-pdv-production.up.railway.app/cadastrar",
+        API_ENDPOINTS.CADASTRO,
         payload,
         { headers: { "Content-Type": "application/json" } }
       );

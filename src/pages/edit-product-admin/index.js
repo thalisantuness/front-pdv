@@ -5,6 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import { FaTrash, FaPlus, FaSpinner, FaCheck, FaTimes, FaSave, FaArrowLeft } from 'react-icons/fa';
 import SideBar from '../../components/SideBar';
 import { usePlataforma } from '../../context/PlataformaContext';
+import { API_ENDPOINTS } from '../../config/api';
 import './styles.css';
 
 function EditImovel() {
@@ -37,7 +38,7 @@ function EditImovel() {
   const secondaryPhotosInputRef = useRef(null);
 
   // URL da API
-  const API_URL = "https://back-pdv-production.up.railway.app/produtos";
+  const API_URL = API_ENDPOINTS.PRODUTOS;
 
   // Carrega categorias únicas dos produtos existentes
   useEffect(() => {

@@ -4,6 +4,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import { FaTrash, FaPlus, FaSpinner, FaCheck, FaTimes, FaArrowLeft } from 'react-icons/fa';
 import { useNavigate, useParams } from 'react-router-dom';
 import { usePlataforma } from '../../context/PlataformaContext';
+import { API_ENDPOINTS } from '../../config/api';
 import './styles.css';
 
 function FormRegister({ productId }) {
@@ -40,7 +41,7 @@ function FormRegister({ productId }) {
   const secondaryPhotosInputRef = useRef(null);
 
   // URL da API
-  const API_URL = "https://back-pdv-production.up.railway.app/produtos";
+  const API_URL = API_ENDPOINTS.PRODUTOS;
 
   // Carrega categorias únicas dos produtos existentes
   useEffect(() => {

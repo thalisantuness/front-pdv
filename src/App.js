@@ -16,6 +16,7 @@ import OrdersPage from "./pages/orders";
 import ReferralsPage from "./pages/referrals";
 import ProfilePage from "./pages/profile";
 import RegisterCompany from "./pages/register-company";
+import ChatPage from "./pages/chat";
 
 function App() {
   return (
@@ -104,6 +105,15 @@ function App() {
               element={
                 <ProtectRoute>
                   <ProfilePage />
+                </ProtectRoute>
+              }
+            />
+
+            <Route
+              path="/chat"
+              element={
+                <ProtectRoute>
+                  <ChatPage />
                 </ProtectRoute>
               }
             />
