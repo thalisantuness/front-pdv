@@ -1,11 +1,13 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { io } from 'socket.io-client';
 import axios from 'axios';
-import { usePlataforma } from '../context/PlataformaContext';
+import { usePlataforma } from './PlataformaContext';
 import { toast } from 'react-toastify';
 import { SOCKET_URL, API_ENDPOINTS } from '../config/api';
 
-export const useChat = () => {
+const ChatContext = createContext();
+
+export const ChatProvider = ({ children }) => {
   const { usuario, token, getAuthHeaders } = usePlataforma();
   const [conversas, setConversas] = useState([]);
   const [conversaAtual, setConversaAtual] = useState(null);
@@ -206,17 +208,6 @@ export const useChat = () => {
           // Usar o maior valor entre backend, estado atual e localStorage
           const naoLidas = Math.max(naoLidasBackend, naoLidasAtual, naoLidasPersistido);
           
-          // Debug: log para verificar o que está vindo do backend
-          if (naoLidas > 0 || naoLidasBackend !== naoLidasAtual || naoLidasPersistido > 0) {
-            console.log('🔔 Carregando conversa:', {
-              conversa_id: conv.conversa_id,
-              nao_lidas_backend: naoLidasBackend,
-              nao_lidas_atual: naoLidasAtual,
-              nao_lidas_storage: naoLidasPersistido,
-              nao_lidas_final: naoLidas
-            });
-          }
-          
           return {
             ...conv,
             ultima_mensagem_texto: conv.ultima_mensagem_texto || 
@@ -238,14 +229,13 @@ export const useChat = () => {
 
         return conversasOrdenadas;
       });
-
     } catch (error) {
       console.error('Erro ao carregar conversas:', error);
       toast.error('Erro ao carregar conversas');
     } finally {
       setLoading(false);
     }
-  }, [getAuthHeaders]);
+  }, [getAuthHeaders, usuario]);
 
   // Carregar mensagens de uma conversa
   const carregarMensagens = useCallback(async (conversaId) => {
@@ -323,8 +313,7 @@ export const useChat = () => {
     } finally {
       setEnviando(false);
     }
-  }, [marcarComoLida]);
-
+  }, []);
 
   // Selecionar conversa
   const selecionarConversa = useCallback(async (conversa) => {
@@ -383,7 +372,7 @@ export const useChat = () => {
     }, 0);
   }, [conversas]);
 
-  return {
+  const value = {
     conversas,
     conversaAtual,
     mensagens,
@@ -399,5 +388,19 @@ export const useChat = () => {
     isMinhaMensagem,
     isMensagemFuncionario
   };
+
+  return (
+    <ChatContext.Provider value={value}>
+      {children}
+    </ChatContext.Provider>
+  );
+};
+
+export const useChat = () => {
+  const context = useContext(ChatContext);
+  if (!context) {
+    throw new Error('useChat deve ser usado dentro de um ChatProvider');
+  }
+  return context;
 };
 

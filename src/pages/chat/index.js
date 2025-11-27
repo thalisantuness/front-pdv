@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import SideBar from '../../components/SideBar';
 import ConversasList from '../../components/chat/ConversasList';
 import ChatWindow from '../../components/chat/ChatWindow';
-import { useChat } from '../../hooks/useChat';
+import { useChat } from '../../context/ChatContext';
 import { usePlataforma } from '../../context/PlataformaContext';
 import { ToastContainer, toast } from 'react-toastify';
 import './styles.css';

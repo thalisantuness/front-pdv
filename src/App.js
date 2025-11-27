@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import { PlataformaProvider } from "./context/PlataformaContext";
+import { ChatProvider } from "./context/ChatContext";
 import "./global.css";
 
 import Home from "./pages/home";
@@ -21,7 +22,8 @@ import ChatPage from "./pages/chat";
 function App() {
   return (
     <PlataformaProvider>
-      <Router>
+      <ChatProvider>
+        <Router>
         <div className="container">
           <Routes>
             <Route path="/" element={<LoginAdmin />} />
@@ -120,6 +122,7 @@ function App() {
           </Routes>
         </div>
       </Router>
+      </ChatProvider>
     </PlataformaProvider>
   );
 }

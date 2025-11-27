@@ -14,6 +14,16 @@ const ConversasList = ({ conversas, conversaAtual, onSelectConversa, loading, on
   const [loadingUsuarios, setLoadingUsuarios] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const isAdmin = usuario?.role === 'admin';
+  
+  // Debug: log para verificar conversas recebidas
+  useEffect(() => {
+    console.log('📋 ConversasList recebeu conversas:', conversas.map(c => ({
+      conversa_id: c.conversa_id,
+      nome: c.Usuario1?.nome,
+      nao_lidas: c.nao_lidas,
+      tipo: typeof c.nao_lidas
+    })));
+  }, [conversas]);
   // Carregar usuários quando modal abrir
   useEffect(() => {
     if (showModalUsuarios && isAdmin) {
@@ -234,6 +244,18 @@ const ConversasList = ({ conversas, conversaAtual, onSelectConversa, loading, on
         {conversas.map((conversa) => {
           const isActive = conversaAtual?.conversa_id === conversa.conversa_id;
           const cliente = conversa.Usuario1;
+          const naoLidasValue = Number(conversa.nao_lidas) || 0;
+          const temNaoLidas = naoLidasValue > 0;
+          
+          // Debug: log para verificar valores
+          console.log('🔍 Renderizando conversa:', {
+            conversa_id: conversa.conversa_id,
+            nome: cliente?.nome,
+            nao_lidas_original: conversa.nao_lidas,
+            nao_lidas_number: naoLidasValue,
+            temNaoLidas: temNaoLidas,
+            tipo: typeof conversa.nao_lidas
+          });
           
           return (
             <div
@@ -257,20 +279,24 @@ const ConversasList = ({ conversas, conversaAtual, onSelectConversa, loading, on
               
               <div className="conversa-info">
                 <div className="conversa-nome">
-                  {cliente?.nome || 'Cliente'}
+                  <span>{cliente?.nome || 'Cliente'}</span>
+                  {temNaoLidas && (
+                    <span className="conversa-badge" style={{ display: 'flex' }}>
+                      {naoLidasValue}
+                    </span>
+                  )}
                 </div>
                 <div className="conversa-preview">
-                  {conversa.ultima_mensagem_texto || 'Sem mensagens'}
+                  {conversa.ultima_mensagem_texto || 
+                   conversa.ultima_mensagem_conteudo || 
+                   conversa.UltimaMensagem?.conteudo || 
+                   conversa.UltimaMensagem?.texto ||
+                   'Sem mensagens'}
                 </div>
                 <div className="conversa-meta">
                   <span className="conversa-time">
                     {formatarUltimaMensagem(conversa.ultima_mensagem)}
                   </span>
-                  {conversa.nao_lidas > 0 && (
-                    <span className="conversa-badge">
-                      {conversa.nao_lidas}
-                    </span>
-                  )}
                 </div>
               </div>
             </div>

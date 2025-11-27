@@ -108,13 +108,29 @@
 .conversa-info {
   flex: 1;
   min-width: 0;
+  position: relative;
 }
 
 .conversa-nome {
   font-weight: 600;
-  color: #2d3748;
+  color: #000000 !important;
   margin-bottom: 0.25rem;
   font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.conversa-nome span {
+  color: #000000 !important;
+}
+
+.conversa-item.active .conversa-nome {
+  color: #000000 !important;
+}
+
+.conversa-item.active .conversa-nome span {
+  color: #000000 !important;
 }
 
 .conversa-preview {
@@ -139,14 +155,31 @@
 }
 
 .conversa-badge {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background-color: #e53e3e;
   color: white;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
+  padding: 0.2rem 0.5rem;
+  border-radius: 50%;
   min-width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
 }
 
 /* ==================== JANELA DE CHAT ==================== */

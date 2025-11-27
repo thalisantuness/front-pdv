@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { usePlataforma } from "../../context/PlataformaContext";
+import { useChat } from "../../context/ChatContext";
 import Logo from "../../assets/logo-transparente.png";
 import "./styles.css";
 
@@ -8,7 +9,8 @@ export default function SideBar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
-  const { logout } = usePlataforma();
+  const { logout, usuario } = usePlataforma();
+  const { totalNaoLidas, carregarConversas } = useChat();
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -20,6 +22,15 @@ export default function SideBar() {
 
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
+
+  // Carregar conversas para verificar mensagens não lidas
+  useEffect(() => {
+    // Verificar se é empresa, funcionário ou admin (roles que podem usar chat)
+    const role = usuario?.role;
+    if (role === 'empresa' || role === 'empresa-funcionario' || role === 'admin') {
+      carregarConversas();
+    }
+  }, [usuario, carregarConversas]);
 
   const toggleMobileMenu = () => {
     setIsMobileOpen(!isMobileOpen);
@@ -69,8 +80,11 @@ export default function SideBar() {
             Usuários
           </Link>
 
-          <Link to="/chat" onClick={closeMobileMenu}>
+          <Link to="/chat" onClick={closeMobileMenu} className="chat-link">
             Chat
+            {totalNaoLidas > 0 && (
+              <span className="chat-badge">{totalNaoLidas}</span>
+            )}
           </Link>
 
           <button className="logout-btn" onClick={handleLogout}>
