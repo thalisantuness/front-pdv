@@ -72,6 +72,10 @@ export default function SideBar() {
             Pedidos
           </Link>
 
+          <Link to="/graficos-faturamento" onClick={closeMobileMenu}>
+            Gráficos
+          </Link>
+
           <Link to="/meu-perfil" onClick={closeMobileMenu}>
             Meu Perfil
           </Link>

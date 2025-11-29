@@ -33,6 +33,9 @@ export const API_ENDPOINTS = {
   CONVERSAS: `${API_BASE_URL}/conversas`,
   MENSAGENS: (conversaId) => `${API_BASE_URL}/conversas/${conversaId}/mensagens`,
   MARCAR_LIDA: (mensagemId) => `${API_BASE_URL}/mensagens/${mensagemId}/lida`,
+  
+  // Gráficos
+  GRAFICO_FATURAMENTOS: `${API_BASE_URL}/grafico-faturamentos`,
 };
 
 // Log para debug

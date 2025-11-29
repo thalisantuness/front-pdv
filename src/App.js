@@ -18,6 +18,7 @@ import ReferralsPage from "./pages/referrals";
 import ProfilePage from "./pages/profile";
 import RegisterCompany from "./pages/register-company";
 import ChatPage from "./pages/chat";
+import GraficosFaturamento from "./pages/graficos-faturamento";
 
 function App() {
   return (
@@ -116,6 +117,15 @@ function App() {
               element={
                 <ProtectRoute>
                   <ChatPage />
+                </ProtectRoute>
+              }
+            />
+
+            <Route
+              path="/graficos-faturamento"
+              element={
+                <ProtectRoute>
+                  <GraficosFaturamento />
                 </ProtectRoute>
               }
             />
